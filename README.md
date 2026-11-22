@@ -8,7 +8,10 @@ The home screen shows the eight games from the poster. Tap one to play it.
 
 - **Dress up the cat.** Pick DRESS, SHOES, T-SHIRT, TROUSERS, HATS, WIG or NOSE from the list on the side, then tap something on the shelf to put it on (tap it again, or TAKE OFF, to take it off). A dress swaps out the T-shirt and trousers. Tap TA-DA! to show off the outfit. The outfit is remembered on this device.
 - **Help the cat.** A pet patient comes to the vet with spikes stuck in its fur, a scratch, a broken bone, a broken heart or a cold. The X-ray shows broken bones and the heart inside, and LISTEN (the stethoscope) hears a sad heart. Pick a tool from the side (plaster, medicine, stethoscope, injection or tweezers) and tap the patient to use it. The cards at the bottom show what still needs fixing. When everything is better, help the next patient or go back to the other games.
-- Coming soon: craft with a cat, make music with a cat, cook with a cat, bedtime story, lots of cats, wash and clean.
+- **Craft with a cat.** A big empty piece of paper. Draw or write with the PEN, stamp PAWS prints or SPLAT paint, in any colour from the bottom. UNDO takes back the last thing and NEW starts a fresh page. The picture is remembered on this device.
+- **Make music with a cat.** A rainbow piano, a drum, a cat guitar (its body is a cat's head), DJ Catnip, who plays a beat and lights up the dance floor, and the dance floor itself: tap it and the cat dances.
+- **Cook with a cat.** A recipe book with two pages of six recipes. Only the first recipe is open; cooking it unlocks the next. Page 2 opens when page 1 is complete. To cook, put the right things from the shelf in the bowl, stir it three times, then put it in the oven, pan or freezer. Progress is remembered on this device.
+- Coming soon: bedtime story, lots of cats, the red ball paths game, wash and clean.
 
 ## Running it
 
