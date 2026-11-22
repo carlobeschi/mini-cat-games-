@@ -251,6 +251,8 @@ const sfx={
   tada(){seq('triangle',[[523,523,.12,.14],[659,659,.12,.14],[784,784,.12,.14],[1047,1047,.35,.16]])},
   paw(){seq('sine',[[500,300,.07,.12]])},
   splat(){noise(.25,600,.35,'lowpass');seq('sine',[[260,90,.18,.18]])},
+  squeak(){seq('sine',[[1400,1800,.06,.05]])},
+  sweep(){noise(.12,3000,.12,'bandpass')},
   crack(){noise(.18,2500,.3);seq('triangle',[[1300,700,.12,.12]])},
   pop(){seq('sine',[[500,900,.09,.16]])},
   chime(n){seq('triangle',[[523*Math.pow(1.12,n),523*Math.pow(1.12,n),.12,.14],[784*Math.pow(1.12,n),784*Math.pow(1.12,n),.2,.14]])},
@@ -293,18 +295,20 @@ const GAMES=[
   {id:'cook',name:['COOK WITH','A CAT'],ready:true,icon:()=>`<path d="M-16,0 L-12,20 H12 L16,0Z" fill="#8a4fc4" ${K} stroke-width="2.5"/><path d="M-19,0 Q-22,-14 -8,-14 Q-4,-26 8,-18 Q22,-18 19,0Z" fill="#f6b3cb" ${K} stroke-width="2.5"/><circle cx="2" cy="-22" r="4.5" fill="#d8243c" stroke="${INK}" stroke-width="1.8"/>`},
   {id:'sleep',name:['BEDTIME','STORY'],ready:true,icon:()=>`<path d="M8,-22 A20,20 0 1 0 22,8 A15,15 0 1 1 8,-22Z" fill="#ffd34d" ${K} stroke-width="2.5"/><text x="-26" y="-6" class="lbl" style="font-size:20px">z</text><text x="-34" y="-20" class="lbl" style="font-size:15px">z</text>`},
   {id:'heads',name:['LOTS OF','CATS'],ready:true,icon:()=>[[-20,4,'#3cb8e0'],[0,-8,'#8a4fc4'],[20,4,'#d6ad45']].map(([x,y,c])=>`<path transform="translate(${x},${y})" d="M-11,10 L-12,-6 L-10,-14 L-4,-7 L4,-7 L10,-14 L12,-6 L11,10Z" fill="${c}" ${K} stroke-width="2.2"/>`).join('')},
-  {id:'wash',name:['WASH AND','CLEAN'],icon:()=>[[-14,6,11],[8,-8,9],[14,12,7],[-4,-16,6]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#d7ecfa" ${K} stroke-width="2.2"/><path d="M${x-r*.45},${y-r*.3} q${r*.25},${-r*.3} ${r*.5},${-r*.3}" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>`).join('')},
+  {id:'paths',name:['BALL','PATHS'],ready:true,icon:()=>`<path d="M-18,-18 V18 M0,-18 V18 M18,-18 V18 M-18,-4 H0 M0,8 H18" stroke="#8a4fc4" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="-18" cy="-22" r="7" fill="#d8243c" stroke="${INK}" stroke-width="2"/><circle cx="18" cy="22" r="7" fill="#ffd34d" stroke="${INK}" stroke-width="2"/>`},
+  {id:'wash',name:['WASH AND','CLEAN'],ready:true,icon:()=>[[-14,6,11],[8,-8,9],[14,12,7],[-4,-16,6]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#d7ecfa" ${K} stroke-width="2.2"/><path d="M${x-r*.45},${y-r*.3} q${r*.25},${-r*.3} ${r*.5},${-r*.3}" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>`).join('')},
 ];
 function homeScreen(){
+  // three by three, like the boxes on Carolina's poster
   const tiles=GAMES.map((g,i)=>{
-    const c=i%2,r=Math.floor(i/2),x=14+c*190,y=64+r*112,w=182,h=104;
+    const c=i%3,r=Math.floor(i/3),x=14+c*126,y=62+r*150,w=120,h=142;
     return `<g class="hot" data-game="${g.id}" role="button" tabindex="0" aria-label="${g.name.join(' ')}${g.ready?'':' (coming soon)'}">
       <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="12" fill="${g.ready?'#fff':'#fbf3ee'}" stroke="${g.ready?'#e0508a':'#f3a3c6'}" stroke-width="3"/>
-      <g transform="translate(${x+44},${y+52})" ${g.ready?'':'opacity=".55"'}>${g.icon()}</g>
-      <text x="${x+124}" y="${y+46}" text-anchor="middle" class="lbl" ${g.ready?'':'style="fill:#7a9cc4"'}>${g.name[0]}</text>
-      <text x="${x+124}" y="${y+68}" text-anchor="middle" class="lbl" ${g.ready?'':'style="fill:#7a9cc4"'}>${g.name[1]}</text>
-      ${g.ready?`<g class="pulse"><rect x="${x+98}" y="${y+76}" width="52" height="20" rx="10" fill="#e0508a" stroke="${INK}" stroke-width="2"/><text x="${x+124}" y="${y+91}" text-anchor="middle" class="soon">PLAY!</text></g>`
-        :`<rect x="${x+100}" y="${y+78}" width="48" height="18" rx="9" fill="#9fb9d6"/><text x="${x+124}" y="${y+91.5}" text-anchor="middle" class="soon">SOON</text>`}
+      <g transform="translate(${x+60},${y+46})" ${g.ready?'':'opacity=".55"'}>${g.icon()}</g>
+      <text x="${x+60}" y="${y+96}" text-anchor="middle" class="lbl" style="font-size:15px${g.ready?'':';fill:#7a9cc4'}">${g.name[0]}</text>
+      <text x="${x+60}" y="${y+114}" text-anchor="middle" class="lbl" style="font-size:15px${g.ready?'':';fill:#7a9cc4'}">${g.name[1]}</text>
+      ${g.ready?`<rect x="${x+36}" y="${y+120}" width="48" height="16" rx="8" fill="#e0508a"/><text x="${x+60}" y="${y+132}" text-anchor="middle" class="soon" style="font-size:11px">PLAY!</text>`
+        :`<rect x="${x+38}" y="${y+120}" width="44" height="16" rx="8" fill="#9fb9d6"/><text x="${x+60}" y="${y+132}" text-anchor="middle" class="soon" style="font-size:11px">SOON</text>`}
     </g>`}).join('');
   stage.innerHTML=DEFS+`<text x="200" y="44" text-anchor="middle" class="ttl" style="font-size:27px">I want mini games about cats!</text>`+tiles;
 }
@@ -1235,6 +1239,226 @@ function matchAct(el){
 }
 function startMatch(){newLevel();matchScreen();say(`Lots of cats! Level ${G.lv}. ${G.total} cats are stuck in ice cubes. Set them free!`,'Tap a cat, then a cat next to it, to swap them. Line up three of the same colour.')}
 
+/* ---------- Ball paths ----------
+   A box of red balls at the top and four pathways that cross over each other on the way down.
+   Only one path ends at the gold ball; the others end in streets where dogs have pooped. Pick a path and watch the ball roll! */
+const LANES=[66,155,245,334],PTOP=150,PBOT=396;
+const P={rungs:[],gold:0,balls:5,gotGold:0,rolling:false,result:null,tried:[]};
+try{const d=JSON.parse(localStorage.getItem('catPaths')||'null');if(d)P.gotGold=d.gold|0}catch(e){}
+function savePaths(){try{localStorage.setItem('catPaths',JSON.stringify({gold:P.gotGold}))}catch(e){}}
+function newPaths(){
+  // rungs join two lanes next to each other at one height; two rungs never touch the same lane at the same height
+  P.rungs=[];const ys=[];for(let y=PTOP+22;y<=PBOT-22;y+=22)ys.push(y);
+  for(const y of ys){const r=Math.random();
+    if(r<.2)P.rungs.push({y,a:0},{y,a:2});
+    else if(r<.85)P.rungs.push({y,a:Math.floor(Math.random()*3)})}
+  P.gold=Math.floor(Math.random()*4);P.balls=5;P.result=null;P.tried=[];P.used=[];
+}
+function tracePath(lane){
+  const pts=[[LANES[lane],PTOP-30],[LANES[lane],PTOP]];let l=lane;
+  for(const r of P.rungs.slice().sort((a,b)=>a.y-b.y)){
+    if(r.a===l){pts.push([LANES[l],r.y],[LANES[l+1],r.y]);l++}
+    else if(r.a===l-1){pts.push([LANES[l],r.y],[LANES[l-1],r.y]);l--}
+  }
+  pts.push([LANES[l],PBOT],[LANES[l],PBOT+34]);return{pts,end:l};
+}
+const POO=(x,y,s=1)=>`<g transform="translate(${x},${y}) scale(${s})"><path d="M-14,8 Q-16,0 -8,-1 Q-10,-9 -2,-10 Q-2,-17 4,-18 Q4,-12 8,-9 Q14,-6 10,-1 Q18,1 14,8Z" fill="#8a5a2b" ${K} stroke-width="2"/>
+  <path d="M-22,-14 q3,-6 0,-10 M22,-14 q3,-6 0,-10" fill="none" stroke="#7fc36b" stroke-width="2" stroke-linecap="round"/><circle cx="-12" cy="-24" r="2" fill="${INK}"/></g>`;
+function pathsScreen(){
+  const ends=LANES.map((x,i)=>{const isGold=i===P.gold,show=P.result!==null||P.tried.includes(i);
+    return `<g>${show
+      ?(isGold?`<rect x="${x-38}" y="${PBOT+36}" width="76" height="70" rx="10" fill="#fff6c8" stroke="${INK}" stroke-width="2"/><circle cx="${x}" cy="${PBOT+66}" r="18" fill="#ffd34d" ${K}/><path d="M${x-7},${PBOT+58} q5,-5 10,-2" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/><text x="${x}" y="${PBOT+100}" text-anchor="middle" class="tab" style="font-size:12px">GOLD!</text>`
+        :`<rect x="${x-38}" y="${PBOT+36}" width="76" height="70" rx="10" fill="#c9c9d6" stroke="${INK}" stroke-width="2"/><path d="M${x-38},${PBOT+60} H${x+38}" stroke="#fff" stroke-width="2" stroke-dasharray="7 6"/>${POO(x,PBOT+80,1)}`)
+      :`<rect x="${x-38}" y="${PBOT+36}" width="76" height="70" rx="10" fill="#fff" stroke="${INK}" stroke-width="2"/><text x="${x}" y="${PBOT+82}" text-anchor="middle" class="ttl" style="fill:#c9a6ef">?</text>`}</g>`}).join('');
+  const starts=LANES.map((x,i)=>`<g class="hot" data-lane="${i}" role="button" tabindex="0" aria-label="Path ${i+1}">
+      <circle cx="${x}" cy="${PTOP-30}" r="20" fill="${P.rolling||P.result!==null||!P.balls||P.used.includes(i)?'#efe7e0':'#fff'}" stroke="#8a4fc4" stroke-width="3"/>
+      <text x="${x}" y="${PTOP-23}" text-anchor="middle" class="tab" style="font-size:18px;fill:#8a4fc4">${i+1}</text></g>`).join('');
+  const balls=Array.from({length:5},(_,i)=>`<circle cx="${36+i*25}" cy="78" r="10" fill="${i<P.balls?'#d8243c':'#f3d6d6'}" stroke="${INK}" stroke-width="2"/>`).join('');
+  stage.innerHTML=DEFS+`${backBtn('ball paths')}
+    <rect x="16" y="60" width="140" height="36" rx="18" fill="#fff" stroke="#d8243c" stroke-width="3"/>${balls}
+    <g transform="translate(186,78)"><circle r="14" fill="#ffd34d" ${K}/><text x="22" y="6" class="tab" style="font-size:17px">${P.gotGold}</text></g>
+    <g fill="none" stroke-linecap="round">
+      ${LANES.map(x=>`<path d="M${x},${PTOP-10} V${PBOT+34}" stroke="#c9a6ef" stroke-width="12"/><path d="M${x},${PTOP-10} V${PBOT+34}" stroke="#8a4fc4" stroke-width="3" stroke-dasharray="2 9"/>`).join('')}
+      ${P.rungs.map(r=>`<path d="M${LANES[r.a]},${r.y} H${LANES[r.a+1]}" stroke="#c9a6ef" stroke-width="12"/>`).join('')}
+    </g>
+    ${starts}${ends}
+    <circle id="ball" cx="-50" cy="-50" r="11" fill="#d8243c" stroke="${INK}" stroke-width="2.2"/>
+    <g id="fx" pointer-events="none"></g>
+    <g class="hot${P.result!==null||!P.balls?' pulse':''}" data-pgo="again" role="button" tabindex="0" aria-label="New paths">
+      <rect x="272" y="58" width="112" height="40" rx="20" fill="${P.result!==null||!P.balls?'#f3a3c6':'#fff'}" ${K}/><text x="328" y="84" text-anchor="middle" class="tab" style="font-size:15px">NEW PATHS</text></g>`;
+}
+function rollBall(lane){
+  if(P.rolling)return;
+  if(P.result!==null){say('Tap NEW PATHS to play again.','');return}
+  if(!P.balls){say('No red balls left! Tap NEW PATHS for more.','');return}
+  if(P.used.includes(lane)){say('That path is done. Try another one!','');return}
+  P.balls--;P.used.push(lane);P.rolling=true;pathsScreen();sfx.tap();
+  const{pts,end}=tracePath(lane),ball=$('#ball');
+  // roll along the path at a steady speed
+  const seg=[];let total=0;for(let i=1;i<pts.length;i++){const d=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);seg.push(d);total+=d}
+  const speed=.32,t0=performance.now();let lastTick=0;
+  function frame(now){
+    if(S.screen!=='paths')return;
+    let dist=Math.min((now-t0)*speed,total),i=0;while(i<seg.length-1&&dist>seg[i]){dist-=seg[i];i++}
+    const f=seg[i]?Math.min(dist/seg[i],1):1,x=pts[i][0]+(pts[i+1][0]-pts[i][0])*f,y=pts[i][1]+(pts[i+1][1]-pts[i][1])*f;
+    ball.setAttribute('cx',x.toFixed(1));ball.setAttribute('cy',y.toFixed(1));
+    if(now-lastTick>140){lastTick=now;seq('sine',[[300+y,300+y,.04,.05]])}
+    if((now-t0)*speed<total)requestAnimationFrame(frame);else landed(end);
+  }
+  requestAnimationFrame(frame);
+  say(`Path ${lane+1}! Roll, roll, roll…`,'');
+}
+function landed(end){
+  P.rolling=false;P.tried.push(end);
+  if(end===P.gold){P.result='gold';P.gotGold++;savePaths();pathsScreen();sfx.tada();hearts(6);
+    say(`Hooray! The ball found the gold ball! You have ${P.gotGold} gold ${P.gotGold>1?'balls':'ball'}.`,'Tap NEW PATHS to play again.');}
+  else{pathsScreen();sfx.splat();
+    const fx=$('#fx');fx&&(fx.innerHTML=`<g transform="translate(${LANES[end]},${PBOT+40})"><g class="pop"><text text-anchor="middle" class="ttl" style="fill:#8a5a2b">EWWW!</text></g></g>`);
+    if(!P.balls){P.result='out';pathsScreen();say('Ewww, dog poo! And no red balls left. Tap NEW PATHS to try again.','');return}
+    say(pick(['Ewww! The ball rolled into dog poo!','Splat! Dog poo! Yuck!','Oh no, a stinky street!']),'Try another path to find the gold ball.')}
+}
+function pathsAct(el){
+  if(el.dataset.lane!==undefined){rollBall(+el.dataset.lane);return true}
+  if(el.dataset.pgo==='again'){if(P.rolling)return true;sfx.swish();newPaths();pathsScreen();say('New paths! Which one goes to the gold ball?','Tap a number at the top.');return true}
+  return false;
+}
+function startPaths(){newPaths();pathsScreen();say('Ball paths! One path goes to the gold ball. The others go to streets where dogs have pooped!','Tap a number at the top to roll a red ball.')}
+
+/* ---------- Wash and clean ----------
+   The cat's room is a mess. Scrub the muddy stains with the sponge, sweep the dust and cobwebs with the broom,
+   put rubbish in the bin, rub out anything you don't like with the eraser, and move the furniture wherever you want. */
+const FURN={
+  sofa:{n:'sofa',a:`<rect x="-62" y="-30" width="124" height="34" rx="10" fill="#e0508a" ${K}/><rect x="-70" y="-14" width="22" height="38" rx="8" fill="#e0508a" ${K}/><rect x="48" y="-14" width="22" height="38" rx="8" fill="#e0508a" ${K}/>
+    <rect x="-50" y="-2" width="100" height="24" rx="6" fill="#f38db5" ${K}/><path d="M-60,24 v8 M60,24 v8" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>`},
+  lamp:{n:'lamp',a:`<path d="M-18,-70 H18 L26,-44 H-26Z" fill="#ffd34d" ${K}/><path d="M0,-44 V20" stroke="${INK}" stroke-width="4"/><ellipse cx="0" cy="22" rx="16" ry="5" fill="#3a3346" ${K} stroke-width="2.5"/>`},
+  plant:{n:'plant',a:`<path d="M-16,0 L-12,24 H12 L16,0Z" fill="#c8853b" ${K}/><path d="M0,0 Q-24,-18 -20,-40 Q-6,-26 0,0 Q6,-34 18,-44 Q22,-18 0,0 Q-4,-30 -2,-52 Q10,-36 0,0Z" fill="#7fc36b" ${K} stroke-width="2.4"/>`},
+  table:{n:'table',a:`<rect x="-40" y="-10" width="80" height="10" rx="3" fill="#a8652f" ${K}/><path d="M-32,0 V26 M32,0 V26" stroke="${INK}" stroke-width="5" stroke-linecap="round"/><path d="M-6,-10 q0,-14 12,-14 q4,8 -2,14" fill="#7cc6f0" stroke="${INK}" stroke-width="2"/>`},
+  tub:{n:'bathtub',a:`<path d="M-56,-14 H56 Q56,22 30,24 H-30 Q-56,22 -56,-14Z" fill="#fff" ${K}/><path d="M-52,-14 H52" stroke="#7cc6f0" stroke-width="5"/><path d="M-40,24 l-6,8 M40,24 l6,8" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>
+    <path d="M44,-14 V-36 Q44,-42 36,-42 H30" fill="none" stroke="#8d8d9a" stroke-width="5" stroke-linecap="round"/>`},
+  picture:{n:'picture',a:`<rect x="-28" y="-22" width="56" height="44" fill="#fff" stroke="#d6ad45" stroke-width="6"/><circle cx="-8" cy="-4" r="7" fill="#ffd34d"/><path d="M-24,18 L-6,4 L6,12 L14,4 L24,16Z" fill="#7fc36b"/>`},
+  rug:{n:'rug',a:`<ellipse rx="60" ry="16" fill="#c9a6ef" ${K}/><ellipse rx="42" ry="10" fill="none" stroke="#8a4fc4" stroke-width="3"/>`},
+};
+const JUNK={
+  peel:{n:'banana peel',a:`<path d="M0,-6 Q-14,-2 -16,10 Q-6,4 0,4 Q6,4 16,10 Q14,-2 0,-6Z M0,-6 Q-2,-14 2,-16" fill="#ffd34d" ${K} stroke-width="2"/>`},
+  sock:{n:'smelly sock',a:`<path d="M-6,-16 H8 V4 Q8,12 0,12 H-14 Q-18,12 -18,6 Q-18,0 -6,0Z" fill="#fff" ${K} stroke-width="2"/><path d="M-6,-10 H8" stroke="#d8243c" stroke-width="3"/><path d="M10,-18 q4,-4 0,-8 M14,-14 q4,-4 0,-8" fill="none" stroke="#7fc36b" stroke-width="2" stroke-linecap="round"/>`},
+  can:{n:'old can',a:`<g transform="rotate(70)"><rect x="-8" y="-12" width="16" height="24" rx="3" fill="#d8243c" ${K} stroke-width="2"/><path d="M-8,-4 H8" stroke="#fff" stroke-width="3"/></g>`},
+  paper:{n:'scrunched paper',a:`<path d="M-10,-8 L-2,-12 L8,-8 L12,0 L8,10 L-4,12 L-12,4Z" fill="#fff" ${K} stroke-width="2"/><path d="M-6,-4 L2,0 L-2,6 M4,-6 L6,4" stroke="#c9c9d6" stroke-width="1.5" fill="none"/>`},
+  bone:{n:'fish bone',a:`<path d="M-14,0 H12 M-6,-6 V6 M0,-7 V7 M6,-6 V6" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/><path d="M12,0 l8,-6 v12Z" fill="#fff" stroke="${INK}" stroke-width="2"/><circle cx="-16" cy="0" r="4" fill="#fff" stroke="${INK}" stroke-width="2"/>`},
+};
+const WTOOLS=[
+  {id:'sponge',name:'SPONGE',icon:`<rect x="-15" y="-10" width="30" height="20" rx="5" fill="#ffd34d" ${K} stroke-width="2.2"/><rect x="-15" y="4" width="30" height="6" rx="2" fill="#7fc36b" stroke="${INK}" stroke-width="1.6"/><circle cx="-6" cy="-3" r="1.6" fill="#d6ad45"/><circle cx="5" cy="-5" r="1.6" fill="#d6ad45"/>`},
+  {id:'broom',name:'BROOM',icon:`<path d="M10,-18 L-2,4" stroke="#a8652f" stroke-width="4" stroke-linecap="round"/><path d="M-4,2 L4,6 L-4,18 L-16,12Z" fill="#f1d27a" ${K} stroke-width="2"/>`},
+  {id:'hand',name:'MOVE',icon:`<path d="M-8,12 Q-14,4 -12,-2 L-12,-10 Q-12,-14 -9,-14 Q-6,-14 -6,-10 V-4 V-14 Q-6,-18 -3,-18 Q0,-18 0,-14 V-4 V-12 Q0,-16 3,-16 Q6,-16 6,-12 V-2 V-8 Q6,-11 9,-11 Q12,-11 12,-8 V4 Q12,12 6,14 H-2Z" fill="#fde3d0" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>`},
+  {id:'eraser',name:'RUB OUT',icon:`<g transform="rotate(-30)"><rect x="-16" y="-8" width="32" height="16" rx="3" fill="#f38db5" ${K} stroke-width="2.2"/><rect x="4" y="-8" width="12" height="16" rx="2" fill="#7cc6f0" stroke="${INK}" stroke-width="2"/></g>`},
+];
+const FLOOR_Y=330;
+const W={tool:'sponge',items:[],dirt:[],drag:null,scrub:false,clean:false,erased:0};
+function newMess(){
+  W.items=[
+    {k:'picture',x:290,y:150,f:1},{k:'tub',x:110,y:300,f:1},{k:'sofa',x:290,y:310,f:1},{k:'lamp',x:354,y:330,f:1},
+    {k:'plant',x:40,y:400,f:1},{k:'table',x:200,y:400,f:1},{k:'rug',x:200,y:440,f:1,under:1}];
+  const junk=shuffle(Object.keys(JUNK)).slice(0,3);
+  junk.forEach((k,i)=>W.items.push({k,x:90+i*110+Math.random()*30,y:360+Math.random()*70,j:1}));
+  W.dirt=[];
+  for(let i=0;i<4;i++)W.dirt.push({t:'mud',x:40+Math.random()*320,y:120+Math.random()*320,r:16+Math.random()*10,v:1,s:Math.random()*360});
+  for(let i=0;i<3;i++)W.dirt.push({t:'dust',x:40+Math.random()*320,y:FLOOR_Y+30+Math.random()*110,r:18,v:1,s:0});
+  W.dirt.push({t:'web',x:28,y:72,r:30,v:1,s:0},{t:'web',x:372,y:72,r:30,v:1,s:90});
+  W.clean=false;W.erased=0;W.tool='sponge';
+}
+function dirtSVG(d,i){
+  if(d.v<=0)return '';
+  const o=`opacity="${Math.max(d.v,.08).toFixed(2)}" data-dirt="${i}"`;
+  if(d.t==='mud'){let p='';const n=9;for(let k=0;k<=n;k++){const a=k/n*Math.PI*2+d.s,r=d.r*(k%2?.7:1);p+=(k?'L':'M')+(d.x+Math.cos(a)*r).toFixed(1)+','+(d.y+Math.sin(a)*r).toFixed(1)}
+    return `<g ${o}><path d="${p}Z" fill="#8a5a2b" stroke="#6b3b1f" stroke-width="2" stroke-linejoin="round"/><circle cx="${d.x+d.r+6}" cy="${d.y-6}" r="4" fill="#8a5a2b"/></g>`}
+  if(d.t==='dust')return `<g ${o}><ellipse cx="${d.x}" cy="${d.y}" rx="${d.r}" ry="${d.r*.6}" fill="#b9b3ad" stroke="#8d8d9a" stroke-width="2"/><circle cx="${d.x-5}" cy="${d.y-3}" r="2" fill="${INK}"/><circle cx="${d.x+5}" cy="${d.y-3}" r="2" fill="${INK}"/></g>`;
+  return `<g ${o} transform="rotate(${d.s} ${d.x} ${d.y})" fill="none" stroke="#8d8d9a" stroke-width="1.6"><path d="M${d.x-28},${d.y-28} L${d.x+20},${d.y+20} M${d.x-28},${d.y-28} L${d.x+28},${d.y-6} M${d.x-28},${d.y-28} L${d.x-6},${d.y+28}"/>
+    ${[12,24,36].map(r=>`<path d="M${d.x-28+r},${d.y-28+r*.2} Q${d.x-28+r*.8},${d.y-28+r*.8} ${d.x-28+r*.2},${d.y-28+r}"/>`).join('')}</g>`;
+}
+const dirtLeft=()=>W.dirt.filter(d=>d.v>0).length+W.items.filter(it=>it.j).length;
+function washScreen(){
+  const left=dirtLeft(),total=W.dirt.length+3,pct=Math.round(100*(1-left/Math.max(total,1)));
+  const item=(it,i)=>{const def=it.j?JUNK[it.k]:FURN[it.k];
+    return `<g class="hot" data-witem="${i}" role="button" tabindex="0" aria-label="${def.n}" transform="translate(${it.x.toFixed(1)},${it.y.toFixed(1)})">${def.a}</g>`};
+  const tools=WTOOLS.map((t,i)=>{const x=16+i*76,on=W.tool===t.id;
+    return `<g class="hot" data-wtool="${t.id}" role="button" tabindex="0" aria-pressed="${on}" aria-label="${t.name}">
+      <rect x="${x}" y="468" width="70" height="46" rx="9" fill="${on?'#f3a3c6':'#fff'}" stroke="${INK}" stroke-width="${on?3:2}"/>
+      <g transform="translate(${x+35},484)">${t.icon}</g><text x="${x+35}" y="508" text-anchor="middle" class="tab" style="font-size:11px">${t.name}</text></g>`}).join('');
+  stage.innerHTML=DEFS+`
+    <rect x="6" y="56" width="388" height="${FLOOR_Y-56}" fill="#fde9c8"/>
+    ${[40,120,200,280,360].map(x=>`<path d="M${x},56 V${FLOOR_Y}" stroke="#f6d9a8" stroke-width="10"/>`).join('')}
+    <rect x="6" y="${FLOOR_Y}" width="388" height="${462-FLOOR_Y}" fill="#d9b48a"/>
+    ${[0,1,2,3].map(i=>`<path d="M6,${FLOOR_Y+18+i*34} H394" stroke="#c49a6c" stroke-width="2"/>`).join('')}
+    <rect x="36" y="96" width="90" height="96" rx="4" fill="#bfe6fb" ${K}/><path d="M81,96 V192 M36,144 H126" stroke="${INK}" stroke-width="3"/>
+    ${backBtn('wash and clean')}
+    <g transform="translate(350,30)"><rect x="-40" y="-14" width="80" height="16" rx="8" fill="#fff" stroke="${INK}" stroke-width="2"/><rect x="-38" y="-12" width="${(76*pct/100).toFixed(1)}" height="12" rx="6" fill="#7fc36b"/><text y="22" text-anchor="middle" class="tab" style="font-size:12px">${pct}% CLEAN</text></g>
+    ${W.items.map((it,i)=>it.under?item(it,i):'').join('')}
+    <g id="dirt">${W.dirt.map((d,i)=>d.t!=='dust'&&d.t!=='web'?dirtSVG(d,i):'').join('')}</g>
+    ${W.items.map((it,i)=>!it.under&&!it.j?item(it,i):'').join('')}
+    <g id="dust">${W.dirt.map((d,i)=>d.t==='dust'||d.t==='web'?dirtSVG(d,i):'').join('')}</g>
+    <g id="bin"><path d="M330,410 L336,456 H372 L378,410Z" fill="#7fc36b" ${K}/><rect x="324" y="402" width="60" height="10" rx="4" fill="#1f8a4c" ${K} stroke-width="2.4"/><text x="354" y="440" text-anchor="middle" class="tab" style="font-size:12px">BIN</text></g>
+    ${W.items.map((it,i)=>it.j?item(it,i):'').join('')}
+    <g transform="translate(${W.clean?200:250},${W.clean?452:458}) scale(.55)" pointer-events="none"><g id="catAnim" class="anim">${catSVG(S.wear,W.clean?'happy':'ache')}</g></g>
+    <g id="fx" pointer-events="none"></g>
+    ${tools}
+    <g class="hot" data-wtool="mess" role="button" tabindex="0" aria-label="Make a new mess"><rect x="320" y="468" width="64" height="46" rx="9" fill="#fff" stroke="${INK}" stroke-width="2"/>
+      <text x="352" y="488" text-anchor="middle" class="tab" style="font-size:12px">NEW</text><text x="352" y="504" text-anchor="middle" class="tab" style="font-size:12px">MESS</text></g>`;
+  stage.classList.toggle('drawing',W.tool==='sponge'||W.tool==='broom'||W.tool==='hand');
+}
+function checkClean(){
+  if(W.clean||dirtLeft())return;
+  W.clean=true;washScreen();sfx.tada();hearts(8);
+  const fx=$('#fx');fx&&fx.insertAdjacentHTML('beforeend',[[80,120],[300,160],[200,260],[120,380],[320,400]].map(([x,y],i)=>`<g transform="translate(${x},${y})"><path class="pulse" d="${starPath(0,0,12)}" fill="#fff" stroke="#ffd34d" stroke-width="3"/></g>`).join(''));
+  say('Sparkly clean! The cat loves its tidy room. Purrr!','Move the furniture around, or tap NEW MESS.');
+}
+function scrubAt(p){
+  const want=W.tool==='sponge'?['mud']:['dust','web'];let hit=false;
+  W.dirt.forEach((d,i)=>{if(d.v<=0||!want.includes(d.t))return;if(Math.hypot(p.x-d.x,p.y-d.y)<d.r+16){d.v-=.12;hit=true;
+    const el=stage.querySelector(`[data-dirt="${i}"]`);
+    if(d.v<=0){el&&el.remove();sfx.pop();}else el&&el.setAttribute('opacity',d.v.toFixed(2))}});
+  if(hit){const fx=$('#fx');if(fx&&Math.random()<.5){fx.insertAdjacentHTML('beforeend',`<g transform="translate(${p.x.toFixed(0)},${p.y.toFixed(0)})"><g class="floaty">${W.tool==='sponge'?`<circle r="${4+Math.random()*5}" fill="#d7ecfa" stroke="#7cc6f0" stroke-width="1.5"/>`:`<circle r="3" fill="#b9b3ad"/>`}</g></g>`);
+    if(fx.childElementCount>30)fx.firstElementChild.remove()}}
+  else{const other=W.dirt.find(d=>d.v>0&&!want.includes(d.t)&&Math.hypot(p.x-d.x,p.y-d.y)<d.r+16);
+    if(other&&!W.warned){W.warned=true;say(other.t==='mud'?'Mud needs the SPONGE!':'Dust and cobwebs need the BROOM!','');setTimeout(()=>W.warned=false,2500)}}
+  return hit;
+}
+function washDown(e){
+  if(S.screen!=='wash'||W.clean&&W.tool!=='hand')return;
+  const p=stagePt(e);if(p.y>462||p.y<56)return;
+  if(W.tool==='hand'){const el=e.target.closest('[data-witem]');if(!el)return;const i=+el.dataset.witem;
+    e.preventDefault();W.drag={i,dx:p.x-W.items[i].x,dy:p.y-W.items[i].y,el};try{stage.setPointerCapture(e.pointerId)}catch(err){}sfx.tap();return}
+  if(W.tool==='sponge'||W.tool==='broom'){e.preventDefault();W.scrub=true;if(scrubAt(p))(W.tool==='sponge'?sfx.squeak:sfx.sweep)();try{stage.setPointerCapture(e.pointerId)}catch(err){}}
+}
+let lastScrubSound=0;
+function washMove(e){
+  if(S.screen!=='wash')return;const p=stagePt(e);
+  if(W.drag){const it=W.items[W.drag.i];it.x=Math.min(Math.max(p.x-W.drag.dx,20),380);it.y=Math.min(Math.max(p.y-W.drag.dy,70),455);
+    W.drag.el.setAttribute('transform',`translate(${it.x.toFixed(1)},${it.y.toFixed(1)})`);return}
+  if(W.scrub&&scrubAt(p)&&performance.now()-lastScrubSound>220){lastScrubSound=performance.now();(W.tool==='sponge'?sfx.squeak:sfx.sweep)()}
+}
+function washUp(){
+  if(S.screen!=='wash')return;
+  if(W.drag){const it=W.items[W.drag.i];W.drag=null;
+    if(it.j&&it.x>320&&it.x<390&&it.y>390){W.items.splice(W.items.indexOf(it),1);sfx.plop();washScreen();say(`The ${JUNK[it.k].n} goes in the bin!`,dirtLeft()?'What else is messy?':'');checkClean();return}
+    if(it.j)say(`Put the ${JUNK[it.k].n} in the BIN.`,'Drag it to the green bin.');}
+  if(W.scrub){W.scrub=false;const left=dirtLeft();washScreen();if(!checkClean()&&left)say(pick(['Scrub scrub!','Swish swish!','Getting cleaner!']),`${left} messy things left.`)}
+}
+stage.addEventListener('pointerdown',washDown);stage.addEventListener('pointermove',washMove);
+stage.addEventListener('pointerup',washUp);stage.addEventListener('pointercancel',washUp);
+function washAct(el){
+  if(el.dataset.wtool!==undefined){const t=el.dataset.wtool;
+    if(t==='mess'){sfx.splat();newMess();washScreen();say('Oh no, what a mess! Let us clean it up.','Use the SPONGE on mud and the BROOM on dust and cobwebs.');return true}
+    sfx.tap();W.tool=t;washScreen();
+    say({sponge:'The sponge! Rub the muddy stains.',broom:'The broom! Sweep the dust and the cobwebs.',hand:'Move things! Drag the furniture anywhere you like, and the rubbish into the bin.',eraser:'The eraser! Tap anything you don\'t like to rub it out.'}[t],'');return true}
+  if(el.dataset.witem!==undefined){
+    const i=+el.dataset.witem,it=W.items[i];
+    if(W.tool==='eraser'){W.items.splice(i,1);sfx.off();washScreen();say(`Rubbed out the ${(it.j?JUNK:FURN)[it.k].n}!`,'');checkClean();return true}
+    if(W.tool==='hand')return true;
+    if(it.j){say(`The ${JUNK[it.k].n} goes in the bin. Pick MOVE and drag it there.`,'');return true}
+    return true}
+  return false;
+}
+function startWash(){newMess();washScreen();say('Wash and clean! The cat\'s room is a big mess.','Use the SPONGE on mud, the BROOM on dust and cobwebs, and MOVE the rubbish into the bin.')}
+
 /* ---------- moving between screens ---------- */
 function show(screen){
   S.screen=screen;musicStop();bedStop();stage.classList.remove('drawing');
@@ -1244,6 +1468,8 @@ function show(screen){
   else if(screen==='cook'){CK.page=Math.min(1,Math.floor(Math.min(CK.done,RECIPES.length-1)/PER_PAGE));bookScreen();say('Cook with a cat! Here is the recipe book.','Tap a recipe with COOK! Cook one to open the next.')}
   else if(screen==='sleep'){B.pg=Math.min(B.pg,B.pages.length-1);storyScreen();say('Sleep time! Let us make a bedtime story with the cat.','Draw a picture, and type or say the words. Then tap READ IT TO ME.')}
   else if(screen==='heads'){startMatch()}
+  else if(screen==='paths'){startPaths()}
+  else if(screen==='wash'){startWash()}
   else if(screen==='help'){S.mood='ache';startHelp()}
   else if(screen==='dress'){S.mood='normal';dressScreen();say('Dress up the cat! What will the cat wear today?','Tap DRESS, SHOES, T-SHIRT or TROUSERS, then pick something from the shelf.')}
 }
@@ -1259,6 +1485,8 @@ function act(el){
   if(S.screen==='cook'&&cookAct(el))return;
   if(S.screen==='sleep'&&bedAct(el))return;
   if(S.screen==='heads'&&matchAct(el))return;
+  if(S.screen==='paths'&&pathsAct(el))return;
+  if(S.screen==='wash'&&washAct(el))return;
   if(el.dataset.tool!==undefined){sfx.tap();const t=el.dataset.tool;H.tool=H.tool===t?null:t;if(H.done)H.tool=null;helpScreen();
     if(H.done)say(`${H.pat.name} is all better now!`,'Tap NEXT PATIENT, or OTHER GAMES.');
     else if(H.tool)say(`The ${TOOL(H.tool).name.toLowerCase()}.`,toolHint());else say('No tool.','Pick a tool from the side.');return}

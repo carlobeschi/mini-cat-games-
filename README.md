@@ -2,7 +2,7 @@
 
 Little tap-to-play cat games for young kids, designed by Carolina. It started from her poster, "I want mini games about cats!", and it looks like her other game, [You Are a Cat](https://github.com/carlobeschi/carolina-the-cat): the same crayon-blue frame, hand-drawn cat and read-aloud story box.
 
-The home screen shows the eight games from the poster. Tap one to play it.
+The home screen shows the nine games, three by three like the boxes on the poster. Tap one to play it.
 
 ## The games
 
@@ -13,7 +13,8 @@ The home screen shows the eight games from the poster. Tap one to play it.
 - **Cook with a cat.** A recipe book with two pages of six recipes. Only the first recipe is open; cooking it unlocks the next. Page 2 opens when page 1 is complete. To cook, put the right things from the shelf in the bowl, stir it three times, then put it in the oven, pan or freezer. Progress is remembered on this device.
 - **Bedtime story.** Make a little book with the cat. On each page, draw a picture and type the words, or tap SPEAK and say them (the microphone works in Chrome, Edge and Safari). Add up to eight pages. Then tap READ IT TO ME, or I'LL READ IT MYSELF to read it out loud, turn the pages, and at THE END the cat goes to sleep. NEW STORY starts again.
 - **Lots of cats.** Carolina's grid of coloured cat heads, as a swap-and-match game. Tap a cat and then the one next to it (or swipe) to swap them and line up three or more of the same colour. Some cats are frozen in ice cubes: a match on them or right next to them breaks the ice and sets the cat free. Each level has one cat rocket: tap ROCKET, then tap where to throw it, and BOOM. Freed cats and finished levels give coins, which fly into the treasure chest like a piggy bank.
-- Coming soon: the red ball paths game, wash and clean.
+- **Ball paths.** Five red balls and four pathways that cross over each other on the way down. One path ends at the gold ball; the others end in streets where dogs have pooped (ewww!). Tap a number to roll a ball down that path, and find the gold ball before the red balls run out. NEW PATHS mixes them up again. Gold balls are counted on this device.
+- **Wash and clean.** The cat's room is a mess. Rub the mud with the SPONGE, sweep the dust bunnies and cobwebs with the BROOM, and MOVE the rubbish into the bin. MOVE also drags the furniture anywhere you like, and RUB OUT removes anything you don't like. When it is all clean the cat is happy. NEW MESS starts again.
 
 ## Running it
 
