@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cat Mini Games</title>
+<meta name="description" content="Little cat games for young kids, designed by Carolina.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gochi+Hand&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+/* The look comes from "You Are a Cat": Carolina's crayon-blue dotted frame, a cream paper stage and blue-pen capitals underneath */
+:root{
+  --sky:#2c8fd6; --sky-dot:#7cc6f0; --sky-soft:#d7ecfa; --paper:#fffaf6; --ink:#1d1a1f;
+  --pen:#1f5fa8; --pink:#f3a3c6; --hot:#e0508a; --gold:#d6ad45;
+  --red:#d8243c; --orange:#f5891f; --green:#1f8a4c; --mint:#cdeee2;
+  --display:"Gochi Hand","Comic Sans MS","Chalkboard SE",cursive;
+  --body:"Patrick Hand","Comic Sans MS","Chalkboard SE",cursive;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--sky-soft);color:var(--ink)}
+body{font-family:var(--body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:8px 16px}
+.wrap{max-width:460px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+@media (min-width:600px){.wrap{max-width:clamp(340px,calc((100vh - 230px) / 1.3),700px);max-width:clamp(340px,calc((100dvh - 230px) / 1.3),700px)}}
+header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(1.4rem,7vw,1.8rem);margin:0;line-height:1;color:var(--hot)}
+.by{font-size:1rem;color:var(--pen);margin-top:2px}
+.by::after{content:"";display:inline-block;vertical-align:middle;margin-left:6px;width:44px;height:12px;background:radial-gradient(circle at 6px 6px,var(--red) 5px,transparent 5.5px),radial-gradient(circle at 22px 6px,var(--orange) 5px,transparent 5.5px),radial-gradient(circle at 38px 6px,var(--green) 5px,transparent 5.5px)}
+.chip{background:var(--paper);border:2.5px solid var(--ink);border-radius:999px;padding:2px 12px;font-size:1.05rem;color:var(--ink);font-family:var(--display);line-height:1.4;cursor:pointer;white-space:nowrap}
+.chip:focus-visible{outline:3px dashed var(--hot);outline-offset:2px}
+.frame{background:var(--sky);background-image:radial-gradient(circle,var(--sky-dot) 0 5px,transparent 6px);background-size:56px 56px;padding:8px;border-radius:6px;border:2.5px solid var(--ink)}
+#stage{display:block;width:100%;height:auto;background:var(--paper);border-radius:14px;border:2.5px solid var(--ink);touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+.story{background:var(--paper);border:2.5px solid var(--ink);border-radius:14px;padding:10px 14px;color:var(--pen);min-height:4.4em}
+#story{font-size:1.35rem;letter-spacing:.06em;text-transform:uppercase;line-height:1.35;margin:0}
+#hint{font-size:1.1rem;letter-spacing:.05em;text-transform:uppercase;color:var(--hot);margin:6px 0 0}
+
+/* svg bits */
+.hot{cursor:pointer}
+.hot:focus{outline:none}
+.hot:focus-visible{outline:3px dashed var(--hot)}
+.lbl{font-family:var(--display);font-size:17px;fill:var(--pen);letter-spacing:.04em}
+.ttl{font-family:var(--display);font-size:30px;fill:var(--hot);letter-spacing:.03em}
+.tab{font-family:var(--display);font-size:16px;fill:var(--ink);letter-spacing:.03em}
+.soon{font-family:var(--display);font-size:13px;fill:#fff;letter-spacing:.05em}
+.anim{transform-box:fill-box;transform-origin:50% 100%}
+.jump{animation:jump .7s ease-out}
+@keyframes jump{0%{transform:none}30%{transform:translateY(-40px) scale(.92,1.08)}60%{transform:translateY(0) scale(1.06,.94)}100%{transform:none}}
+.wiggle{animation:wiggle .9s ease-in-out}
+@keyframes wiggle{0%,100%{transform:rotate(0)}20%{transform:rotate(-6deg)}40%{transform:rotate(6deg)}60%{transform:rotate(-4deg)}80%{transform:rotate(3deg)}}
+.twirl{animation:twirl 1.2s ease-in-out}
+@keyframes twirl{0%{transform:scaleX(1)}25%{transform:scaleX(-1)}50%{transform:scaleX(1)}75%{transform:scaleX(-1)}100%{transform:scaleX(1)}}
+.pop{animation:pop .3s ease-out;transform-box:fill-box;transform-origin:center}
+@keyframes pop{0%{transform:scale(.6)}70%{transform:scale(1.1)}100%{transform:scale(1)}}
+.floaty{animation:floaty 1.6s ease-out both;transform-box:fill-box}
+@keyframes floaty{0%{transform:translateY(0) scale(.5);opacity:1}100%{transform:translateY(-110px) scale(1.1);opacity:0}}
+.pulse{animation:pulse 1.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes pulse{50%{transform:scale(1.06)}}
+@media (prefers-reduced-motion:reduce){.jump,.wiggle,.twirl,.pop,.floaty,.pulse{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Cat Mini Games</h1>
+      <div class="by">Games by Carolina</div>
+    </div>
+    <button class="chip" id="soundBtn" type="button" aria-pressed="true">SOUND ON</button>
+  </header>
+  <div class="frame">
+    <svg id="stage" viewBox="0 0 400 520" role="group" aria-label="Cat mini games"></svg>
+  </div>
+  <div class="story" aria-live="polite">
+    <p id="story"></p>
+    <p id="hint"></p>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ---------- drawing helpers (same crayon style as You Are a Cat) ---------- */
+const INK='#1d1a1f';
+const K=`stroke="${INK}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"`;
+const HEART="M0,8 C-10,0 -14,-7 -7,-11 C-3,-13 0,-10 0,-7 C0,-10 3,-13 7,-11 C14,-7 10,0 0,8Z";
+const BODY="M-19,-80 L-21,-8 Q-21,2 -12,2 Q-3,2 -3,-8 L-2,-18 L3,-18 L4,-7 Q4,2 13,2 Q21,2 21,-8 L18,-80 Z";
+const PINK={head:'#a8652f',body:'#f3a3c6',ear:'#f1e05a'};
+const heart=(x,y,s,fill)=>`<path transform="translate(${x},${y}) scale(${s})" d="${HEART}" fill="${fill}" stroke="${INK}" stroke-width="${(2/s).toFixed(2)}"/>`;
+function starPath(x,y,r){let d='';for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?r*.45:r;d+=(i?'L':'M')+(x+rr*Math.cos(a)).toFixed(1)+','+(y+rr*Math.sin(a)).toFixed(1)}return d+'Z'}
+function blossom(x,y,c,s=1){let p='';for(let i=0;i<5;i++){const a=i*Math.PI*2/5;p+=`<circle cx="${(x+Math.cos(a)*5*s).toFixed(1)}" cy="${(y+Math.sin(a)*5*s).toFixed(1)}" r="${(4*s).toFixed(1)}" fill="${c}" stroke="${INK}" stroke-width="1.2"/>`}return p+`<circle cx="${x}" cy="${y}" r="${(3*s).toFixed(1)}" fill="#ffd34d" stroke="${INK}" stroke-width="1.2"/>`}
+const $=s=>document.querySelector(s);
+const stage=$('#stage');
+
+/* ---------- the wardrobe ----------
+   Everything is drawn in the cat's own coordinates: feet at y=0, top of the head at about y=-148.
+   The categories and their order come from the list on Carolina's poster. */
+const DRESS=(c,trim,pat='')=>`<path d="M-17,-80 Q0,-86 17,-80 L21,-64 Q34,-40 40,-18 Q0,-10 -40,-18 Q-34,-40 -21,-64Z" fill="${c}" ${K}/>
+  ${pat}<path d="M-38,-22 Q0,-14 38,-22" fill="none" stroke="${trim}" stroke-width="4" stroke-linecap="round"/>
+  <path d="M-21,-64 Q0,-58 21,-64" fill="none" stroke="${trim}" stroke-width="3" stroke-linecap="round"/>`;
+const TOP=(c,extra='')=>`<path d="M-19,-81 Q0,-85 18,-81 L30,-72 L25,-62 L19,-66 L20,-44 Q0,-40 -21,-44 L-20,-66 L-26,-61 L-31,-71Z" fill="${c}" ${K}/>
+  <path d="M-7,-82 Q0,-75 7,-82" fill="none" stroke="${INK}" stroke-width="2"/>${extra}`;
+const LEGS=(c,short)=>short
+  ?`<path d="M-21,-48 L-22,-24 L-4,-24 L-2,-30 L3,-30 L5,-24 L22,-24 L20,-48Z" fill="${c}" ${K}/>`
+  :`<path d="M-21,-48 L-22,-4 L-3,-4 L-2,-26 L3,-26 L4,-4 L22,-4 L20,-48Z" fill="${c}" ${K}/>`;
+const FEET=(c,extra='',tall=0)=>[-12,13].map(x=>`<path d="M${x-10},${-2-tall} L${x-10},-1 Q${x-12},7 ${x+1},7 L${x+12},7 Q${x+14},1 ${x+9},-3 L${x+9},${-2-tall}Z" fill="${c}" ${K} stroke-width="2.5"/>`).join('')+extra;
+
+const WARDROBE=[
+  {id:'dress',name:'DRESS',ic:[0,-48,.95],items:[
+    {id:'pink',name:'pink dress',art:()=>DRESS('#f38db5','#fff',`<g fill="#fff">${[[-14,-40],[2,-50],[14,-34],[-4,-28],[22,-24],[-24,-25]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2.6"/>`).join('')}</g>`)},
+    {id:'blue',name:'blue dress',art:()=>DRESS('#3cb8e0','#ffd34d',`<path d="M-26,-40 q6,-5 12,0 t12,0 t12,0 t12,0 M-32,-28 q6,-5 12,0 t12,0 t12,0 t12,0 t12,0" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>`)},
+    {id:'purple',name:'purple dress',art:()=>DRESS('#8a4fc4','#f38db5',`${[[-14,-44],[10,-52],[16,-30],[-20,-26],[0,-34]].map(([x,y])=>`<path d="${starPath(x,y,4.5)}" fill="#ffd34d"/>`).join('')}`)},
+    {id:'party',name:'party dress',art:()=>DRESS('#ffd34d','#e0508a',`${[-24,-12,0,12,24].map((x,i)=>heart(x,-28-(i%2)*14,.55,'#e0508a')).join('')}`)},
+  ]},
+  {id:'shoes',name:'SHOES',ic:[0,-2,1.1],items:[
+    {id:'red',name:'red shoes',art:()=>FEET('#d8243c',[-12,13].map(x=>`<circle cx="${x}" cy="1" r="2.5" fill="#ffd34d" stroke="${INK}" stroke-width="1.2"/>`).join(''))},
+    {id:'boots',name:'wellies',art:()=>FEET('#ffd34d',[-12,13].map(x=>`<path d="M${x-10},-6 H${x+9}" stroke="${INK}" stroke-width="2"/>`).join(''),12)},
+    {id:'trainers',name:'trainers',art:()=>FEET('#fff',[-12,13].map(x=>`<path d="M${x-12},4 H${x+12}" stroke="#2c8fd6" stroke-width="3"/><path d="M${x-5},-1 l6,3 M${x-5},2 l6,-3" stroke="#e0508a" stroke-width="1.8"/>`).join(''))},
+    {id:'sparkly',name:'sparkly shoes',art:()=>FEET('#c9a6ef',[-12,13].map(x=>`<path d="${starPath(x+1,1,4.5)}" fill="#fff" stroke="${INK}" stroke-width="1"/>`).join(''))},
+  ]},
+  {id:'top',name:'T-SHIRT',ic:[0,-62,1.1],items:[
+    {id:'stripes',name:'stripy T-shirt',art:()=>TOP('#fff',`<path d="M-20,-72 H20 M-20,-62 H20 M-20,-52 H20" stroke="#2c8fd6" stroke-width="3.5"/>`)},
+    {id:'heart',name:'heart T-shirt',art:()=>TOP('#7fc36b',heart(0,-60,.9,'#e0508a'))},
+    {id:'star',name:'star T-shirt',art:()=>TOP('#f5891f',`<path d="${starPath(0,-61,9)}" fill="#ffd34d" stroke="${INK}" stroke-width="2"/>`)},
+    {id:'fish',name:'fish T-shirt',art:()=>TOP('#2b3f8f',`<path d="M-9,-60 q9,-8 18,0 q-9,8 -18,0Z M9,-60 l7,-5 v10Z" fill="#f9a03f" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round"/>`)},
+  ]},
+  {id:'legs',name:'TROUSERS',ic:[0,-24,1.05],items:[
+    {id:'jeans',name:'blue jeans',art:()=>LEGS('#3a63c9')+`<path d="M-12,-46 V-34 M12,-46 V-34" stroke="#9cc0f0" stroke-width="1.6" stroke-dasharray="3 3"/>`},
+    {id:'spots',name:'spotty trousers',art:()=>LEGS('#f38db5')+`<g fill="#fff">${[[-15,-40],[-9,-22],[-15,-10],[14,-38],[9,-18],[15,-8]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2.5"/>`).join('')}</g>`},
+    {id:'green',name:'green trousers',art:()=>LEGS('#1f8a4c')+`<path d="M-22,-12 H-3 M4,-12 H22" stroke="#ffd34d" stroke-width="3"/>`},
+    {id:'shorts',name:'shorts',art:()=>LEGS('#f5891f',true)},
+  ]},
+  {id:'hat',name:'HATS',ic:[0,-150,.85],items:[
+    {id:'crown',name:'crown',art:()=>`<path d="M-21,-126 L-24,-157 L-11,-141 L0,-163 L11,-141 L24,-157 L21,-126Z" fill="#ffd34d" ${K} stroke-width="2.5"/>
+      <circle cx="0" cy="-135" r="4" fill="#e0508a" stroke="${INK}" stroke-width="1.8"/><circle cx="-13" cy="-133" r="3" fill="#2c8fd6" stroke="${INK}" stroke-width="1.5"/><circle cx="13" cy="-133" r="3" fill="#7fc36b" stroke="${INK}" stroke-width="1.5"/>`},
+    {id:'tophat',name:'top hat',art:()=>`<g transform="rotate(-8 0 -128)"><path d="M-16,-129 L-14,-176 H14 L16,-129Z" fill="#3a3346" ${K}/>
+      <rect x="-15" y="-143" width="30" height="8" fill="#e0508a" stroke="${INK}" stroke-width="2"/><ellipse cx="0" cy="-128" rx="29" ry="6" fill="#3a3346" ${K}/></g>`},
+    {id:'sunhat',name:'sun hat',art:()=>`<g transform="rotate(-6 0 -130)"><path d="M-18,-131 Q-19,-162 0,-162 Q19,-162 18,-131Z" fill="#f1d27a" ${K}/>
+      <rect x="-19" y="-142" width="38" height="8" fill="#3cb8b0" stroke="${INK}" stroke-width="2"/><ellipse cx="0" cy="-130" rx="42" ry="8" fill="#f1d27a" ${K}/>${blossom(14,-139,'#e0508a',.8)}</g>`},
+    {id:'bow',name:'bow',art:()=>`<path d="M18,-127 L4,-138 L5,-116Z M18,-127 L32,-138 L31,-116Z" fill="#e0508a" ${K} stroke-width="2.2"/><circle cx="18" cy="-127" r="4.5" fill="#f38db5" stroke="${INK}" stroke-width="2"/>`},
+  ]},
+  {id:'wig',name:'WIG',ic:[0,-112,.8],items:[
+    {id:'long',name:'long yellow hair',art:()=>`<path d="M-30,-118 Q-34,-138 -18,-132 Q0,-142 18,-134 Q34,-140 31,-118 Q38,-96 36,-72 Q30,-66 27,-74 L28,-114 Q10,-118 0,-128 Q-10,-118 -27,-114 L-27,-74 Q-31,-66 -36,-72 Q-38,-96 -30,-118Z" fill="#ffd34d" ${K} stroke-width="2.5"/>
+      <path d="M-33,-100 q3,8 0,16 M33,-100 q-3,8 0,16" fill="none" stroke="#d6ad45" stroke-width="2"/>`},
+    {id:'curly',name:'curly purple hair',art:()=>`${[[-28,-120],[-30,-106],[-31,-92],[-30,-80],[-16,-128],[0,-131],[16,-129],[29,-121],[31,-107],[32,-93],[31,-81]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="8" fill="#8a4fc4" ${K} stroke-width="2.2"/>`).join('')}`},
+    {id:'bunches',name:'red bunches',art:()=>`<path d="M-28,-120 Q-14,-134 0,-126 Q14,-134 29,-122 Q16,-120 0,-116 Q-14,-120 -28,-120Z" fill="#c0392b" ${K} stroke-width="2.4"/>
+      <path d="M-28,-118 Q-48,-114 -46,-92 Q-40,-100 -34,-96 Q-38,-108 -28,-112Z M29,-120 Q49,-116 47,-94 Q41,-102 35,-98 Q39,-110 29,-114Z" fill="#c0392b" ${K} stroke-width="2.4"/>
+      <circle cx="-30" cy="-116" r="3.5" fill="#7fc36b" stroke="${INK}" stroke-width="1.5"/><circle cx="31" cy="-118" r="3.5" fill="#7fc36b" stroke="${INK}" stroke-width="1.5"/>`},
+    {id:'blue',name:'blue spiky hair',art:()=>`<path d="M-28,-118 L-30,-134 L-20,-126 L-16,-144 L-6,-128 L0,-148 L6,-128 L16,-144 L20,-126 L30,-136 L29,-118 Q0,-124 -28,-118Z" fill="#2c8fd6" ${K} stroke-width="2.4"/>`},
+  ]},
+  {id:'nose',name:'NOSE',ic:[0,-97,2.6],items:[
+    {id:'clown',name:'clown nose',art:()=>`<circle cx="0" cy="-97" r="7" fill="#d8243c" stroke="${INK}" stroke-width="2"/><circle cx="-2.5" cy="-99.5" r="2" fill="#fff" opacity=".8"/>`},
+    {id:'pig',name:'piggy nose',art:()=>`<ellipse cx="0" cy="-96" rx="8" ry="6" fill="#f6b3cb" stroke="${INK}" stroke-width="2"/><ellipse cx="-3" cy="-96" rx="1.5" ry="2.3" fill="${INK}"/><ellipse cx="3" cy="-96" rx="1.5" ry="2.3" fill="${INK}"/>`},
+    {id:'heart',name:'heart nose',art:()=>heart(0,-97,.75,'#e0508a')},
+    {id:'dog',name:'puppy nose',art:()=>`<path d="M-7,-100 Q0,-104 7,-100 Q6,-92 0,-91 Q-6,-92 -7,-100Z" fill="#3a3346" stroke="${INK}" stroke-width="1.8"/><ellipse cx="-2" cy="-99.5" rx="2" ry="1.2" fill="#fff" opacity=".7"/>`},
+  ]},
+];
+const CAT_OF=id=>WARDROBE.find(c=>c.id===id);
+const itemOf=(cat,id)=>CAT_OF(cat).items.find(i=>i.id===id);
+
+/* The cat, with slots for clothes. Arms first, then body, clothes on the body, the head, then things on the head. */
+function catSVG(w={},m='normal',p=PINK){
+  const ra='45,-61';
+  let st='';for(let y=-74;y<=-6;y+=8) st+=`M-22,${y} q5.25,-5 10.5,0 t10.5,0 t10.5,0 t10.5,0 `;
+  const eyes=m==='ache'
+    ?`<circle cx="-10" cy="-103" r="3" fill="${INK}"/><circle cx="10" cy="-103" r="3" fill="${INK}"/><path d="M-16,-109 L-5,-113 M16,-109 L5,-113" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/>`
+    :m==='happy'
+    ?`<path d="M-15,-102 q5,-7 10,0 M5,-102 q5,-7 10,0" fill="none" stroke="${INK}" stroke-width="2.6" stroke-linecap="round"/>`
+    :`<circle cx="-10" cy="-104" r="3.3" fill="${INK}"/><circle cx="10" cy="-104" r="3.3" fill="${INK}"/><circle cx="-9" cy="-105.2" r="1" fill="#fff"/><circle cx="11" cy="-105.2" r="1" fill="#fff"/>`;
+  const mouth=m==='ache'?`<path d="M-7,-88 q2,-3 4.5,0 t4.5,0 t4.5,0" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linecap="round"/>`
+    :m==='happy'
+    ?`<path d="M-9,-93 H9 Q8,-82 0,-82 Q-8,-82 -9,-93Z" fill="#fff" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>`
+    :`<path d="M-5,-92 q2.5,3 5,0 q2.5,3 5,0" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linecap="round"/>`;
+  const wear=k=>w[k]?itemOf(k,w[k]).art():'';
+  // a sleeve colour for the T-shirt, so the arms look dressed too
+  const sleeve=w.top&&!w.dress?{stripes:'#fff',heart:'#7fc36b',star:'#f5891f',fish:'#2b3f8f'}[w.top]:null;
+  const dsleeve=w.dress?{pink:'#f38db5',blue:'#3cb8e0',purple:'#8a4fc4',party:'#ffd34d'}[w.dress]:null;
+  const sl=sleeve||dsleeve;
+  return `
+  <path d="M-18,-68 L-46,-58 M17,-68 L${ra}" stroke="${INK}" stroke-width="7.5" stroke-linecap="round"/>
+  <path d="M-18,-68 L-46,-58 M17,-68 L${ra}" stroke="${p.head}" stroke-width="3.5" stroke-linecap="round"/>
+  ${sl?`<path d="M-18,-69 L-30,-65 M17,-69 L29,-65" stroke="${INK}" stroke-width="11" stroke-linecap="round"/><path d="M-18,-69 L-30,-65 M17,-69 L29,-65" stroke="${sl}" stroke-width="6.5" stroke-linecap="round"/>`:''}
+  <path d="M-46,-58 l-6,-5 M-46,-58 l-7,1 M-46,-58 l-4,6 M${ra} l6,-5 M${ra} l7,1 M${ra} l4,6" stroke="${INK}" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="${BODY}" fill="${p.body}"/>
+  <path d="${st}" fill="none" stroke="${INK}" stroke-width="2" clip-path="url(#catClip)"/>
+  <path d="${BODY}" fill="none" ${K}/>
+  ${w.dress?'':wear('legs')}${w.dress?'':wear('top')}${wear('dress')}${wear('shoes')}
+  <path d="M-28,-88 L-29,-124 L-24,-142 L-9,-125 L13,-127 L28,-148 L31,-116 L30,-88 Q30,-79 21,-79 L-19,-79 Q-28,-79 -28,-88Z" fill="${p.head}" ${K}/>
+  <path d="M-24,-134 L-14,-126 L-25,-124Z M25,-139 L18,-128 L27,-125Z" fill="${p.ear}" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"/>
+  ${wear('wig')}
+  ${eyes}
+  <path d="M-3,-98 L3,-98 L0,-95Z" fill="#e0508a" stroke="${INK}" stroke-width="1.2"/>
+  ${mouth}
+  <path d="M-12,-95 L-40,-99 M-12,-92 L-40,-88 M12,-95 L40,-99 M12,-92 L40,-88" stroke="${INK}" stroke-width="1.8" stroke-linecap="round"/>
+  ${wear('nose')}${wear('hat')}`;
+}
+const DEFS=`<defs><clipPath id="catClip"><path d="${BODY}"/></clipPath></defs>`;
+
+/* ---------- state, saved on this device ---------- */
+const S={screen:'home',tab:'dress',wear:{},sound:true,busy:false};
+try{const d=JSON.parse(localStorage.getItem('catMiniGames')||'{}');if(d.wear)S.wear=d.wear;if(d.sound===false)S.sound=false}catch(e){}
+// drop anything saved that no longer exists in the wardrobe
+for(const k in S.wear){if(!CAT_OF(k)||!itemOf(k,S.wear[k]))delete S.wear[k]}
+function save(){try{localStorage.setItem('catMiniGames',JSON.stringify({wear:S.wear,sound:S.sound}))}catch(e){}}
+
+/* ---------- sound and reading aloud ---------- */
+let AC=null;
+function ac(){if(!S.sound)return null;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){return null}return AC}
+function seq(type,notes){
+  const a=ac();if(!a)return;let t=a.currentTime;
+  notes.forEach(([f1,f2,d,v])=>{
+    const o=a.createOscillator(),g=a.createGain();o.type=type;
+    o.frequency.setValueAtTime(f1,t);o.frequency.linearRampToValueAtTime(f2,t+d);
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+    o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.03);t+=d+.05;
+  });
+}
+const sfx={
+  tap(){seq('triangle',[[520,700,.08,.12]])},
+  swish(){seq('sine',[[300,900,.16,.12]])},
+  off(){seq('sine',[[700,300,.14,.1]])},
+  tada(){seq('triangle',[[523,523,.12,.14],[659,659,.12,.14],[784,784,.12,.14],[1047,1047,.35,.16]])},
+  thump(){seq('sine',[[90,60,.14,.5],[90,60,.2,.45]])},
+  plink(){seq('triangle',[[900,1400,.1,.14]])},
+  pinch(){seq('square',[[1200,900,.06,.06]])},
+  zap(){seq('sawtooth',[[200,1200,.25,.06],[1200,1200,.1,.04]])},
+  meow(){const a=ac();if(!a)return;const t=a.currentTime,d=.6;const o=a.createOscillator(),f=a.createBiquadFilter(),g=a.createGain();
+    o.type='sawtooth';f.type='bandpass';f.frequency.value=1000;f.Q.value=2;
+    o.frequency.setValueAtTime(480,t);o.frequency.linearRampToValueAtTime(770,t+d*.35);o.frequency.linearRampToValueAtTime(380,t+d);
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.28,t+.06);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+    o.connect(f).connect(g).connect(a.destination);o.start(t);o.stop(t+d+.05)},
+};
+let VOICE=null;
+function pickVoice(){try{const vs=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang));if(!vs.length)return null;
+  return vs.find(v=>/en-GB/i.test(v.lang)&&/female|libby|sonia|serena|kate|martha|google uk english female/i.test(v.name))||vs.find(v=>/en-GB/i.test(v.lang))||vs[0]}catch(e){return null}}
+try{window.speechSynthesis&&speechSynthesis.addEventListener('voiceschanged',()=>{VOICE=null})}catch(e){}
+function speak(t){
+  try{if(!S.sound||!window.speechSynthesis)return;speechSynthesis.cancel();VOICE=VOICE||pickVoice();
+    t.replace(/…/g,', ').split(/(?<=[.!?])\s+/).filter(x=>x.trim()).forEach(b=>{
+      const u=new SpeechSynthesisUtterance(b);if(VOICE)u.voice=VOICE;u.lang=VOICE?VOICE.lang:'en-GB';u.rate=.85;u.pitch=1.3;u.volume=.85;speechSynthesis.speak(u)});
+  }catch(e){}
+}
+function say(story,hint=''){$('#story').textContent=story;$('#hint').textContent=hint;speak(story)}
+function updateSound(){const b=$('#soundBtn');b.textContent=S.sound?'SOUND ON':'SOUND OFF';b.setAttribute('aria-pressed',S.sound)}
+$('#soundBtn').addEventListener('click',()=>{S.sound=!S.sound;if(!S.sound)try{speechSynthesis.cancel()}catch(e){}updateSound();save();sfx.tap()});
+
+/* ---------- the home screen: Carolina's poster of games ---------- */
+const GAMES=[
+  {id:'dress',name:['DRESS UP','THE CAT'],ready:true,icon:()=>`<g transform="translate(0,40) scale(.36)">${catSVG({dress:'pink',hat:'crown'})}</g>`},
+  {id:'help',name:['HELP','THE CAT'],ready:true,icon:()=>`<rect x="-24" y="-8" width="48" height="16" rx="8" fill="#f6d2a8" ${K} stroke-width="2.5" transform="rotate(-30)"/><rect x="-24" y="-8" width="48" height="16" rx="8" fill="#f6d2a8" ${K} stroke-width="2.5" transform="rotate(30)"/>${heart(0,0,1.1,'#d8243c')}`},
+  {id:'craft',name:['CRAFT WITH','A CAT'],icon:()=>[[-18,-6,'#8a4fc4'],[16,-12,'#3cb8e0'],[4,14,'#e0508a']].map(([x,y,c])=>`<path d="M${x},${y-12} q6,6 12,2 q-2,8 2,12 q-8,0 -12,6 q-4,-6 -12,-6 q4,-6 2,-12 q6,4 8,-2Z" fill="${c}" stroke="${INK}" stroke-width="1.6"/>`).join('')},
+  {id:'music',name:['MAKE MUSIC','WITH A CAT'],icon:()=>`<path d="M-14,10 V-18 L14,-24 V4" fill="none" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/><ellipse cx="-19" cy="11" rx="7" ry="5.5" fill="#e0508a" ${K} stroke-width="2.4"/><ellipse cx="9" cy="5" rx="7" ry="5.5" fill="#8a4fc4" ${K} stroke-width="2.4"/>`},
+  {id:'cook',name:['COOK WITH','A CAT'],icon:()=>`<path d="M-16,0 L-12,20 H12 L16,0Z" fill="#8a4fc4" ${K} stroke-width="2.5"/><path d="M-19,0 Q-22,-14 -8,-14 Q-4,-26 8,-18 Q22,-18 19,0Z" fill="#f6b3cb" ${K} stroke-width="2.5"/><circle cx="2" cy="-22" r="4.5" fill="#d8243c" stroke="${INK}" stroke-width="1.8"/>`},
+  {id:'sleep',name:['BEDTIME','STORY'],icon:()=>`<path d="M8,-22 A20,20 0 1 0 22,8 A15,15 0 1 1 8,-22Z" fill="#ffd34d" ${K} stroke-width="2.5"/><text x="-26" y="-6" class="lbl" style="font-size:20px">z</text><text x="-34" y="-20" class="lbl" style="font-size:15px">z</text>`},
+  {id:'heads',name:['LOTS OF','CATS'],icon:()=>[[-20,4,'#3cb8e0'],[0,-8,'#8a4fc4'],[20,4,'#d6ad45']].map(([x,y,c])=>`<path transform="translate(${x},${y})" d="M-11,10 L-12,-6 L-10,-14 L-4,-7 L4,-7 L10,-14 L12,-6 L11,10Z" fill="${c}" ${K} stroke-width="2.2"/>`).join('')},
+  {id:'wash',name:['WASH AND','CLEAN'],icon:()=>[[-14,6,11],[8,-8,9],[14,12,7],[-4,-16,6]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#d7ecfa" ${K} stroke-width="2.2"/><path d="M${x-r*.45},${y-r*.3} q${r*.25},${-r*.3} ${r*.5},${-r*.3}" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>`).join('')},
+];
+function homeScreen(){
+  const tiles=GAMES.map((g,i)=>{
+    const c=i%2,r=Math.floor(i/2),x=14+c*190,y=64+r*112,w=182,h=104;
+    return `<g class="hot" data-game="${g.id}" role="button" tabindex="0" aria-label="${g.name.join(' ')}${g.ready?'':' (coming soon)'}">
+      <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="12" fill="${g.ready?'#fff':'#fbf3ee'}" stroke="${g.ready?'#e0508a':'#f3a3c6'}" stroke-width="3"/>
+      <g transform="translate(${x+44},${y+52})" ${g.ready?'':'opacity=".55"'}>${g.icon()}</g>
+      <text x="${x+124}" y="${y+46}" text-anchor="middle" class="lbl" ${g.ready?'':'style="fill:#7a9cc4"'}>${g.name[0]}</text>
+      <text x="${x+124}" y="${y+68}" text-anchor="middle" class="lbl" ${g.ready?'':'style="fill:#7a9cc4"'}>${g.name[1]}</text>
+      ${g.ready?`<g class="pulse"><rect x="${x+98}" y="${y+76}" width="52" height="20" rx="10" fill="#e0508a" stroke="${INK}" stroke-width="2"/><text x="${x+124}" y="${y+91}" text-anchor="middle" class="soon">PLAY!</text></g>`
+        :`<rect x="${x+100}" y="${y+78}" width="48" height="18" rx="9" fill="#9fb9d6"/><text x="${x+124}" y="${y+91.5}" text-anchor="middle" class="soon">SOON</text>`}
+    </g>`}).join('');
+  stage.innerHTML=DEFS+`<text x="200" y="44" text-anchor="middle" class="ttl" style="font-size:27px">I want mini games about cats!</text>`+tiles;
+}
+
+/* ---------- Dress up the cat ---------- */
+const CX=150,CY=392,CS=1.85; // where the cat stands and how big it is
+function dressScreen(){
+  const tab=CAT_OF(S.tab);
+  // the list of things to wear, a tall pink-topped box like on the poster
+  const tabs=WARDROBE.map((c,i)=>{const y=76+i*44,on=c.id===S.tab,has=!!S.wear[c.id];
+    return `<g class="hot" data-tab="${c.id}" role="button" tabindex="0" aria-pressed="${on}" aria-label="${c.name}">
+      <rect x="296" y="${y}" width="94" height="38" rx="9" fill="${on?'#f3a3c6':'#fff'}" stroke="${INK}" stroke-width="${on?3:2}"/>
+      <text x="343" y="${y+25}" text-anchor="middle" class="tab">${c.name}</text>
+      ${has?heart(384,y+6,.5,'#e0508a'):''}</g>`}).join('');
+  // the shelf: four things and a "take it off" spot
+  const slots=tab.items.map((it,i)=>{const x=10+i*76,on=S.wear[tab.id]===it.id,[ix,iy,is]=tab.ic;
+    return `<g class="hot" data-item="${it.id}" role="button" tabindex="0" aria-pressed="${on}" aria-label="${it.name}">
+      <rect x="${x}" y="430" width="70" height="80" rx="10" fill="${on?'#fde3ee':'#fff'}" stroke="${on?'#e0508a':INK}" stroke-width="${on?3.5:2}"/>
+      <g transform="translate(${x+35},470) scale(${is}) translate(${-ix},${-iy})" pointer-events="none">${it.art()}</g></g>`}).join('')
+    +`<g class="hot" data-item="" role="button" tabindex="0" aria-label="Take it off">
+      <rect x="314" y="430" width="76" height="80" rx="10" fill="#fff" stroke="${INK}" stroke-width="2"/>
+      <path d="M340,452 l24,24 M364,452 l-24,24" stroke="#d8243c" stroke-width="5" stroke-linecap="round"/>
+      <text x="352" y="500" text-anchor="middle" class="tab" style="font-size:13px">TAKE OFF</text></g>`;
+  stage.innerHTML=DEFS+`
+    <g class="hot" data-go="home" role="button" tabindex="0" aria-label="Back to all the games">
+      <circle cx="36" cy="36" r="22" fill="#fffaf6" ${K}/><path d="M46,36 H26 M34,27 L25,36 L34,45" fill="none" stroke="#2c8fd6" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></g>
+    <text x="70" y="45" class="ttl" style="font-size:26px">dress up the cat</text>
+    <g class="hot" data-go="tada" role="button" tabindex="0" aria-label="Ta-da! Show off the outfit">
+      <rect x="296" y="18" width="94" height="40" rx="20" fill="#ffd34d" ${K}/><text x="343" y="45" text-anchor="middle" class="tab" style="font-size:20px">TA-DA!</text></g>
+    <path d="M10,420 H390" stroke="#e0508a" stroke-width="3" stroke-linecap="round"/>
+    <ellipse cx="${CX}" cy="${CY+4}" rx="78" ry="13" fill="#f3a3c6" ${K}/>
+    <g id="catHit" class="hot" data-go="pet" role="button" tabindex="0" aria-label="The cat">
+      <rect x="${CX-100}" y="70" width="200" height="${CY-66}" fill="transparent"/>
+      <g transform="translate(${CX},${CY}) scale(${CS})"><g id="catAnim" class="anim">${catSVG(S.wear,S.mood)}</g></g></g>
+    <g id="fx" pointer-events="none"></g>
+    ${tabs}${slots}`;
+}
+function restartClass(el,c,ms){if(!el)return;el.classList.remove(c);void el.getBoundingClientRect();el.classList.add(c);setTimeout(()=>el.classList.remove(c),ms)}
+function hearts(n=6){
+  const fx=$('#fx');if(!fx)return;
+  fx.innerHTML=Array.from({length:n},(_,i)=>{const x=CX-90+Math.random()*180,y=140+Math.random()*180,c=['#e0508a','#ffd34d','#3cb8e0','#8a4fc4'][i%4];
+    return `<g transform="translate(${x.toFixed(0)},${y.toFixed(0)})"><g class="floaty" style="animation-delay:${(i*.08).toFixed(2)}s">${i%2?heart(0,0,1.2,c):`<path d="${starPath(0,0,10)}" fill="${c}" stroke="${INK}" stroke-width="2"/>`}</g></g>`}).join('');
+}
+function outfitWords(){
+  const w=S.wear,bits=[];
+  if(w.hat)bits.push(itemOf('hat',w.hat).name);if(w.wig)bits.push(itemOf('wig',w.wig).name);
+  if(w.dress)bits.push(itemOf('dress',w.dress).name);else{if(w.top)bits.push(itemOf('top',w.top).name);if(w.legs)bits.push(itemOf('legs',w.legs).name)}
+  if(w.shoes)bits.push(itemOf('shoes',w.shoes).name);if(w.nose)bits.push(itemOf('nose',w.nose).name);
+  return bits.length>1?bits.slice(0,-1).join(', ')+' and '+bits[bits.length-1]:bits[0]||'';
+}
+const PRAISE=['So pretty!','Looking good!','Wow, fancy!','Purr-fect!','Meow, I love it!','How lovely!'];
+function wearItem(id){
+  const t=S.tab;
+  if(!id){if(!S.wear[t]){say('There is nothing to take off here.','Pick something from the shelf.');return}
+    delete S.wear[t];sfx.off();S.mood='normal';dressScreen();save();say('Off it comes!','Pick something else to wear.');return}
+  if(S.wear[t]===id){wearItem('');return}
+  S.wear[t]=id;
+  // a dress goes over everything, so it swaps out the T-shirt and trousers, and they swap out the dress
+  let extra='';
+  if(t==='dress'&&(S.wear.top||S.wear.legs)){delete S.wear.top;delete S.wear.legs;extra=' The T-shirt and trousers go back in the wardrobe.'}
+  if((t==='top'||t==='legs')&&S.wear.dress){delete S.wear.dress;extra=' The dress goes back in the wardrobe.'}
+  S.mood='happy';dressScreen();save();sfx.swish();
+  restartClass($('#catAnim'),'jump',700);
+  const it=itemOf(t,id);
+  say(`The ${it.name}! ${PRAISE[Math.floor(Math.random()*PRAISE.length)]}${extra}`,'Tap TA-DA when you are ready.');
+}
+function tada(){
+  if(S.busy)return;
+  const words=outfitWords();
+  if(!words){say('The cat has nothing on yet!','Tap DRESS, SHOES, T-SHIRT or TROUSERS, then pick something from the shelf.');sfx.meow();return}
+  S.busy=true;S.mood='happy';dressScreen();sfx.tada();hearts(8);restartClass($('#catAnim'),'twirl',1200);
+  say(`Ta-da! Look at the cat in the ${words}. What a fashion cat!`,'Change anything you like, or tap the arrow to go back.');
+  setTimeout(()=>{S.busy=false},1200);
+}
+
+/* ---------- Help the cat ----------
+   Carolina's vet game. A pet patient comes in with spikes stuck in its fur, a scratch, a broken bone,
+   a broken heart or a cold. The X-ray and the stethoscope find what is hidden inside; the tools on the side fix it.
+   Then you can help the next patient or go back to the other games. */
+const PATIENTS=[
+  {name:'Mimi',p:{head:'#8d8d9a',body:'#d3d4dc',ear:'#f3a3c6'}},
+  {name:'Tiger',p:{head:'#f5891f',body:'#ffd34d',ear:'#f3a3c6'}},
+  {name:'Peach',p:{head:'#f6b3cb',body:'#fff',ear:'#e0508a'}},
+  {name:'Oreo',p:{head:'#3a3346',body:'#fff',ear:'#f3a3c6'}},
+  {name:'Coco',p:{head:'#a8652f',body:'#7cc6f0',ear:'#ffd34d'}},
+  {name:'Bluebell',p:{head:'#7cc6f0',body:'#c9a6ef',ear:'#fff'}},
+];
+const TOOLS=[
+  {id:'plaster',name:'PLASTER',icon:()=>`<g transform="rotate(-25)"><rect x="-20" y="-8" width="40" height="16" rx="8" fill="#f6d2a8" ${K} stroke-width="2.4"/><rect x="-7" y="-6" width="14" height="12" rx="2" fill="#fbe7d0" stroke="${INK}" stroke-width="1.4"/></g>`},
+  {id:'medicine',name:'MEDICINE',icon:()=>`<rect x="-20" y="-10" width="16" height="26" rx="3" fill="#8a5a2b" ${K} stroke-width="2.2"/><rect x="-22" y="-16" width="20" height="7" rx="2" fill="#fff" stroke="${INK}" stroke-width="2"/>${heart(-12,3,.5,'#e0508a')}
+    <g transform="rotate(30 12 2)"><rect x="4" y="-10" width="14" height="26" rx="7" fill="#fff" ${K} stroke-width="2.2"/><path d="M4,3 h14 v6 a7,7 0 0 1 -14,0Z" fill="#e0508a" stroke="${INK}" stroke-width="2.2"/></g>`},
+  {id:'steth',name:'LISTEN',icon:()=>`<path d="M-12,-16 V-4 Q-12,8 0,8 Q12,8 12,-4 V-16 M0,8 V12 Q0,20 10,20" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="-12" cy="-17" r="2.5" fill="${INK}"/><circle cx="12" cy="-17" r="2.5" fill="${INK}"/><circle cx="16" cy="18" r="7" fill="#c9c9d6" ${K} stroke-width="2.2"/>`},
+  {id:'injection',name:'INJECTION',icon:()=>`<g transform="rotate(-35)"><rect x="-14" y="-6" width="26" height="12" rx="2" fill="#d7ecfa" ${K} stroke-width="2.2"/><rect x="-12" y="-4" width="12" height="8" fill="#7fc36b"/>
+    <path d="M12,0 H24 M-14,0 H-20 M-20,-7 V7" stroke="${INK}" stroke-width="2.6" stroke-linecap="round"/></g>`},
+  {id:'tweezers',name:'TWEEZERS',icon:()=>`<g transform="rotate(-35)"><path d="M-22,-3 L18,-1 M-22,3 L18,1" stroke="${INK}" stroke-width="5.5" stroke-linecap="round"/><path d="M-22,-3 L18,-1 M-22,3 L18,1" stroke="#c9c9d6" stroke-width="2.5" stroke-linecap="round"/></g>`},
+];
+const TOOL=id=>TOOLS.find(t=>t.id===id);
+// where spikes can stick out of the cat: x, y and the angle they point (cat coordinates)
+const SPIKE_SPOTS=[[-21,-52,200],[20,-38,-15],[-26,-118,225],[30,-104,-30],[-21,-20,165],[21,-60,10],[8,-138,-70]];
+// which tool fixes which problem
+const FIX={spikes:'tweezers',scratch:'plaster',bone:'plaster',heart:'medicine',cold:'injection'};
+const PROB_NAME={spikes:'the spikes',scratch:'the scratch',bone:'the broken bone',heart:'the broken heart',cold:'the cold'};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+
+const H={n:0,pat:null,probs:[],tool:null,xray:false,done:false};
+function newPatient(){
+  H.n++;
+  const prev=H.pat;H.pat=pick(PATIENTS.filter(x=>x!==prev));
+  // something you can see, something hidden inside, and sometimes a cold
+  const seen=pick(['spikes','spikes','scratch']),inside=pick(['bone','heart']);
+  const list=[seen,inside];if(Math.random()<.5)list.push(seen==='spikes'?'cold':pick(['cold','spikes']));
+  H.probs=list.map(t=>({t,fixed:false,found:t!=='bone'&&t!=='heart',
+    spikes:t==='spikes'?shuffle(SPIKE_SPOTS).slice(0,3+Math.floor(Math.random()*2)):null,
+    limb:t==='bone'?pick(['arm','leg']):null}));
+  H.tool=null;H.xray=false;H.done=false;
+}
+const prob=t=>H.probs.find(p=>p.t===t);
+
+const HX=95,HY=398,HS=1.6; // the patient
+// drawn on top of the patient, in cat coordinates
+function patientExtras(){
+  let o='';
+  for(const p of H.probs){
+    if(p.t==='spikes')o+=p.spikes.map(([x,y,a])=>`<g transform="translate(${x},${y}) rotate(${a})"><path d="M-5,-3.2 L20,0 L-5,3.2Z" fill="#1f4f5a" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/></g>`).join('');
+    if(p.t==='scratch')o+=p.fixed
+      ?`<g transform="translate(8,-42) rotate(-20)"><rect x="-13" y="-5.5" width="26" height="11" rx="5.5" fill="#f6d2a8" stroke="${INK}" stroke-width="1.8"/><rect x="-4.5" y="-4" width="9" height="8" rx="1.5" fill="#fbe7d0" stroke="${INK}" stroke-width="1"/></g>`
+      :`<path d="M0,-48 l13,8 M2,-43 l12,8 M4,-38 l10,7" stroke="#d8243c" stroke-width="2.4" stroke-linecap="round"/>`;
+    if(p.t==='bone'&&(p.found||p.fixed))o+=p.limb==='arm'
+      ?(p.fixed?`<path d="M-21,-67 L-41,-60" stroke="${INK}" stroke-width="12" stroke-linecap="round"/><path d="M-21,-67 L-41,-60" stroke="#fff" stroke-width="8" stroke-linecap="round"/><path d="M-27,-69 l2,6 M-34,-66 l2,6" stroke="#c9c9d6" stroke-width="1.5"/>`
+        :`<path d="M-36,-76 l4,5 l-5,2 l4,5 M-28,-50 l3,-5 l3,3 l3,-5" fill="none" stroke="#d8243c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`)
+      :(p.fixed?`<rect x="2" y="-32" width="21" height="31" rx="5" fill="#fff" ${K} stroke-width="2.4"/><path d="M3,-22 h19 M3,-12 h19" stroke="#c9c9d6" stroke-width="1.5"/>`
+        :`<path d="M26,-30 l5,3 l-4,3 l5,3 M26,-12 l5,2 l-4,4 l5,2" fill="none" stroke="#d8243c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`);
+    if(p.t==='heart'&&p.found&&!p.fixed)o+=`<g transform="translate(0,-56) scale(1.3)">${heart(0,0,1,'#e0508a')}<path d="M0,-7 l-2.5,4 l3,3 l-2.5,4 l2,4" fill="none" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round"/></g>`;
+    if(p.t==='cold'&&!p.fixed)o+=`<path d="M0,-94 q-2,6 0,10 q2,-4 0,-10Z" fill="#9ccf6b" stroke="${INK}" stroke-width="1"/>
+      <circle cx="-20" cy="-94" r="5" fill="#f38db5" opacity=".7"/><circle cx="20" cy="-94" r="5" fill="#f38db5" opacity=".7"/>
+      ${[[-40,-128],[42,-120],[-44,-100]].map(([x,y])=>`<g transform="translate(${x},${y})"><circle r="6" fill="#9ccf6b" stroke="${INK}" stroke-width="1.6"/><circle cx="-2" cy="-1" r="1.2" fill="${INK}"/><circle cx="2" cy="-1" r="1.2" fill="${INK}"/><path d="M-6,-5 l-3,-3 M6,-5 l3,-3 M0,-6 v-4" stroke="${INK}" stroke-width="1.4" stroke-linecap="round"/></g>`).join('')}`;
+  }
+  return o;
+}
+// the X-ray screen, with cat ears on top like in Carolina's drawing
+const XR={x:182,y:150,w:104,h:176};
+function xrayScreen(){
+  const {x,y,w,h}=XR,cx=x+w/2,by=y+h-14,s=.95;
+  let inner='';
+  if(H.xray){
+    const bone=prob('bone'),hrt=prob('heart'),W='#eaf4ff';
+    const brokeArm=bone&&bone.limb==='arm'&&!bone.fixed,brokeLeg=bone&&bone.limb==='leg'&&!bone.fixed;
+    inner=`<g transform="translate(${cx},${by}) scale(${s})" fill="none" stroke="${W}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M-24,-88 L-25,-120 L-21,-136 L-9,-122 L11,-124 L24,-140 L27,-114 L26,-88 Q14,-82 0,-82 Q-14,-82 -24,-88Z"/>
+      <circle cx="-10" cy="-106" r="6"/><circle cx="10" cy="-106" r="6"/><path d="M-8,-92 h16 M-4,-92 v4 M0,-92 v4 M4,-92 v4"/>
+      <path d="M0,-80 V-26" stroke-dasharray="4 3" stroke-width="4"/>
+      <path d="M-15,-72 Q0,-64 15,-72 M-16,-62 Q0,-54 16,-62 M-16,-52 Q0,-44 16,-52"/>
+      <path d="M-14,-28 Q0,-18 14,-28"/>
+      ${brokeArm?`<path d="M-16,-68 L-29,-64 M-34,-62 L-44,-59"/><circle cx="-31.5" cy="-63" r="9" stroke="#ff5b6e" stroke-width="2.4"/>`:`<path d="M-16,-68 L-44,-59"/>`}
+      <path d="M16,-68 L43,-61"/>
+      <path d="M-12,-24 V0"/>
+      ${brokeLeg?`<path d="M12,-24 V-15 M12,-9 V0"/><circle cx="12" cy="-12" r="9" stroke="#ff5b6e" stroke-width="2.4"/>`:`<path d="M12,-24 V0"/>`}
+      ${bone&&bone.fixed?(bone.limb==='arm'?`<path d="M-21,-67 L-41,-60" stroke="#9fb4c8" stroke-width="9" opacity=".6"/>`:`<rect x="5" y="-30" width="15" height="28" rx="4" stroke="#9fb4c8" stroke-width="2" fill="#9fb4c8" fill-opacity=".35"/>`):''}
+      </g>
+      <g transform="translate(${cx},${by-56*s}) scale(${s*1.25})">${hrt&&!hrt.fixed
+        ?`${heart(0,0,1,'#ff5b6e')}<path d="M0,-7 l-2.5,4 l3,3 l-2.5,4 l2,4" fill="none" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round"/>`
+        :heart(0,0,1,'#ff5b6e')}</g>`;
+  }else inner=`<text x="${cx}" y="${y+h/2}" text-anchor="middle" class="tab" style="fill:#7cc6f0;font-size:20px">X-RAY</text><text x="${cx}" y="${y+h/2+24}" text-anchor="middle" class="tab" style="fill:#7cc6f0;font-size:13px">TAP TO LOOK</text>`;
+  return `<g class="hot" data-go="xray" role="button" tabindex="0" aria-label="X-ray screen">
+    <path d="M${x+8},${y+2} L${x+14},${y-24} L${x+32},${y+2}Z M${x+w-8},${y+2} L${x+w-14},${y-24} L${x+w-32},${y+2}Z" fill="#e0508a" ${K} stroke-width="2.5"/>
+    <path d="M${x+18},${y+h} V${y+h+44} M${x+w-18},${y+h} V${y+h+44}" stroke="#e0508a" stroke-width="5" stroke-linecap="round"/>
+    <rect x="${x-6}" y="${y}" width="${w+12}" height="${h}" rx="8" fill="#f3a3c6" ${K}/>
+    <rect x="${x}" y="${y+6}" width="${w}" height="${h-12}" rx="5" fill="#1b2b4a" stroke="${INK}" stroke-width="2"/>
+    ${inner}</g>`;
+}
+function helpScreen(){
+  const pat=H.pat,mood=H.done?'happy':'ache';
+  const tools=TOOLS.map((t,i)=>{const y=74+i*68,on=H.tool===t.id;
+    return `<g class="hot" data-tool="${t.id}" role="button" tabindex="0" aria-pressed="${on}" aria-label="${t.name}">
+      <rect x="302" y="${y}" width="88" height="62" rx="9" fill="${on?'#f3a3c6':'#fff'}" stroke="${INK}" stroke-width="${on?3:2}"/>
+      <g transform="translate(346,${y+24})">${t.icon()}</g>
+      <text x="346" y="${y+56}" text-anchor="middle" class="tab" style="font-size:12px">${t.name}</text></g>`}).join('');
+  // the bottom shelf: a to-do card for each problem, or the next patient buttons when everything is fixed
+  const todo=H.done
+    ?`<g class="hot pulse" data-go="next" role="button" tabindex="0" aria-label="Next patient">
+        <rect x="12" y="438" width="184" height="64" rx="32" fill="#f3a3c6" ${K}/><text x="104" y="478" text-anchor="middle" class="tab" style="font-size:20px">NEXT PATIENT</text></g>
+      <g class="hot" data-go="home" role="button" tabindex="0" aria-label="Choose another game">
+        <rect x="206" y="438" width="184" height="64" rx="32" fill="#fff" ${K}/><text x="298" y="478" text-anchor="middle" class="tab" style="font-size:20px">OTHER GAMES</text></g>`
+    :H.probs.map((p,i)=>{const x=12+i*96,known=p.found||p.fixed;
+      const ic={spikes:`<path d="M-14,4 L14,-4 L13,2Z" fill="#1f4f5a" stroke="${INK}" stroke-width="1.4"/>`,
+        scratch:`<path d="M-10,-8 l14,10 M-6,-12 l14,10 M-2,-16 l12,9" stroke="#d8243c" stroke-width="2.6" stroke-linecap="round"/>`,
+        bone:`<path d="M-14,4 L-2,-2 M2,-4 L14,-10" stroke="${INK}" stroke-width="6" stroke-linecap="round"/><path d="M-14,4 L-2,-2 M2,-4 L14,-10" stroke="#fff" stroke-width="3" stroke-linecap="round"/>`,
+        heart:`${heart(0,-2,1.3,'#e0508a')}<path d="M0,-11 l-3,5 l4,4 l-3,5" fill="none" stroke="${INK}" stroke-width="1.8"/>`,
+        cold:`<circle r="9" fill="#9ccf6b" stroke="${INK}" stroke-width="2"/><circle cx="-3" cy="-1" r="1.6" fill="${INK}"/><circle cx="3" cy="-1" r="1.6" fill="${INK}"/>`}[p.t];
+      return `<rect x="${x}" y="436" width="88" height="70" rx="10" fill="${p.fixed?'#e3f5d8':'#fff'}" stroke="${INK}" stroke-width="2"/>
+        <g transform="translate(${x+44},462)">${known?ic:`<text y="10" text-anchor="middle" class="ttl" style="fill:#9fb9d6">?</text>`}</g>
+        ${p.fixed?`<path d="M${x+60},${492} l6,6 l12,-14" fill="none" stroke="${'#1f8a4c'}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`
+          :`<text x="${x+44}" y="${498}" text-anchor="middle" class="tab" style="font-size:12px">${known?(p.t==='spikes'?`${p.spikes.length} SPIKES`:p.t.toUpperCase()):'HIDDEN'}</text>`}`}).join('');
+  stage.innerHTML=DEFS+`
+    <g class="hot" data-go="home" role="button" tabindex="0" aria-label="Back to all the games">
+      <circle cx="36" cy="36" r="22" fill="#fffaf6" ${K}/><path d="M46,36 H26 M34,27 L25,36 L34,45" fill="none" stroke="#2c8fd6" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></g>
+    <text x="70" y="45" class="ttl" style="font-size:26px">help the cat</text>
+    <text x="346" y="44" text-anchor="middle" class="tab" style="font-size:15px;fill:var(--pen)">PATIENT ${H.n}</text>
+    <text x="${HX}" y="112" text-anchor="middle" class="lbl" style="font-size:22px">${pat.name.toUpperCase()}</text>
+    <path d="M10,424 H390" stroke="#e0508a" stroke-width="3" stroke-linecap="round"/>
+    <rect x="18" y="${HY-4}" width="156" height="14" rx="4" fill="#cdeee2" ${K} stroke-width="2.5"/>
+    ${xrayScreen()}
+    <g class="hot" data-go="patient" role="button" tabindex="0" aria-label="${pat.name}, the patient">
+      <rect x="${HX-80}" y="140" width="160" height="${HY-134}" fill="transparent"/>
+      <g transform="translate(${HX},${HY}) scale(${HS})"><g id="catAnim" class="anim">${catSVG({},mood,pat.p)}${patientExtras()}</g></g></g>
+    <g id="fx" pointer-events="none"></g>
+    ${tools}${todo}`;
+}
+function toolHint(){return H.tool?`Now tap ${H.pat.name} to use the ${TOOL(H.tool).name.toLowerCase()}.`:'Pick a tool from the side.'}
+function useTool(){
+  const name=H.pat.name,t=H.tool;
+  if(H.done){sfx.meow();S.mood='happy';restartClass($('#catAnim'),'wiggle',900);say(`Purr! ${name} feels much better.`,'Tap NEXT PATIENT, or OTHER GAMES.');return}
+  if(!t){sfx.meow();restartClass($('#catAnim'),'wiggle',900);say(`Ouch! ${name} needs help.`,'Pick a tool from the side, or look with the X-RAY.');return}
+  if(t==='steth'){
+    const h=prob('heart');sfx.thump();
+    if(h&&!h.fixed&&!h.found){h.found=true;helpScreen();say(`Thump… thump… ${name}'s heart sounds sad. It is broken! Some medicine will make it better.`,'Pick the MEDICINE.');return}
+    if(h&&!h.fixed){say(`Thump… thump… The heart is still sad. Give ${name} some medicine.`,'Pick the MEDICINE.');return}
+    say(`Thump thump! ${name}'s heart sounds happy and strong.`,nextHint());return}
+  const p=H.probs.find(p=>!p.fixed&&FIX[p.t]===t&&p.found);
+  if(!p){
+    const hidden=H.probs.find(p=>!p.fixed&&FIX[p.t]===t&&!p.found);
+    if(hidden){sfx.meow();say(hidden.t==='bone'?`Where does it hurt? Look inside with the X-RAY first.`:`Is ${name} poorly inside? Listen with the stethoscope, or look with the X-RAY.`,hidden.t==='bone'?'Tap the X-RAY.':'Pick LISTEN, or tap the X-RAY.');return}
+    say(`${name} doesn't need the ${TOOL(t).name.toLowerCase()}. Phew!`,nextHint());return}
+  if(p.t==='spikes'){
+    const [x,y]=p.spikes.pop();sfx.plink();
+    const fx=$('#fx');
+    if(p.spikes.length){helpScreen();
+      $('#fx').innerHTML=`<g transform="translate(${(HX+x*HS).toFixed(0)},${(HY+y*HS).toFixed(0)})"><g class="floaty"><path d="M-5,-3.2 L20,0 L-5,3.2Z" fill="#1f4f5a" stroke="${INK}" stroke-width="1.4"/></g></g>`;
+      say(`Ouch! Out it comes. ${p.spikes.length} more to go.`,'Keep tapping with the TWEEZERS.');return}
+  }
+  p.fixed=true;
+  const words={spikes:`All the spikes are out! Well done.`,scratch:`A plaster on the scratch. All better!`,
+    bone:`A plaster cast keeps the bone still while it gets better.`,heart:`The medicine works! ${name}'s heart is happy again.`,
+    cold:`A little pinch… so brave! The cold is going away.`}[p.t];
+  ({scratch:sfx.swish,bone:sfx.swish,heart:sfx.tada,cold:sfx.pinch,spikes:sfx.plink}[p.t]||sfx.tap)();
+  if(H.probs.every(q=>q.fixed)){H.done=true;H.tool=null;helpScreen();sfx.tada();hearts(8);restartClass($('#catAnim'),'jump',700);
+    setTimeout(()=>sfx.meow(),500);
+    say(`${words} ${name} is all better! Thank you, doctor!`,'Help the next patient, or pick another game.');return}
+  helpScreen();restartClass($('#catAnim'),'jump',700);say(words,nextHint());
+}
+function nextHint(){
+  const left=H.probs.filter(p=>!p.fixed);
+  if(!left.length)return '';
+  const hid=left.find(p=>!p.found);const vis=left.find(p=>p.found);
+  if(vis)return `${PROB_NAME[vis.t][0].toUpperCase()+PROB_NAME[vis.t].slice(1)} ${vis.t==='spikes'?'need':'needs'} the ${TOOL(FIX[vis.t]).name}.`;
+  return hid.t==='bone'?'Something hurts inside. Look with the X-RAY!':'Something is wrong inside. Look with the X-RAY, or LISTEN.';
+}
+function lookXray(){
+  if(H.xray&&!H.tool){say('The X-ray shows the bones and the heart inside.',nextHint());return}
+  if(H.xray&&H.tool){useTool();return}
+  H.xray=true;sfx.zap();
+  const found=H.probs.filter(p=>!p.found);found.forEach(p=>p.found=true);
+  helpScreen();
+  const b=found.find(p=>p.t==='bone'),h=found.find(p=>p.t==='heart');
+  say(b?`Look! A broken bone in ${H.pat.name}'s ${b.limb}. Ouch!`:h?`Look! ${H.pat.name}'s heart is broken.`:`The bones look fine. Good!`,nextHint());
+}
+function startHelp(){newPatient();helpScreen();
+  const p=H.probs[0];
+  say(`Help the cat! ${H.pat.name} is poorly. ${p.t==='spikes'?'There are spikes stuck in the fur!':p.t==='scratch'?'There is a scratch!':''}`,nextHint()||'Pick a tool from the side.')}
+
+/* ---------- moving between screens ---------- */
+function show(screen){
+  S.screen=screen;
+  if(screen==='home'){homeScreen();say('Pick a game! These games are by Carolina.','Tap a box to play.')}
+  else if(screen==='help'){S.mood='ache';startHelp()}
+  else if(screen==='dress'){S.mood='normal';dressScreen();say('Dress up the cat! What will the cat wear today?','Tap DRESS, SHOES, T-SHIRT or TROUSERS, then pick something from the shelf.')}
+}
+function act(el){
+  if(el.dataset.game!==undefined){const g=GAMES.find(x=>x.id===el.dataset.game);
+    if(g.ready){sfx.tap();show(g.id)}
+    else{sfx.meow();restartClass(el,'wiggle',900);el.style.transformBox='fill-box';el.style.transformOrigin='center';
+      say(`${g.name.join(' ')} is coming soon. Carolina is still making it!`,'Try DRESS UP THE CAT.')}
+    return}
+  if(el.dataset.tool!==undefined){sfx.tap();const t=el.dataset.tool;H.tool=H.tool===t?null:t;if(H.done)H.tool=null;helpScreen();
+    if(H.done)say(`${H.pat.name} is all better now!`,'Tap NEXT PATIENT, or OTHER GAMES.');
+    else if(H.tool)say(`The ${TOOL(H.tool).name.toLowerCase()}.`,toolHint());else say('No tool.','Pick a tool from the side.');return}
+  if(el.dataset.tab!==undefined){sfx.tap();S.tab=el.dataset.tab;dressScreen();const c=CAT_OF(S.tab);say(`${c.name.toLowerCase()}. Which one do you like?`,'Tap one on the shelf to put it on.');return}
+  if(el.dataset.item!==undefined){wearItem(el.dataset.item);return}
+  const go=el.dataset.go;
+  if(go==='home'){sfx.tap();show('home')}
+  else if(go==='tada')tada();
+  else if(go==='patient')useTool();
+  else if(go==='xray')lookXray();
+  else if(go==='next'){sfx.tap();startHelp()}
+  else if(go==='pet'){sfx.meow();S.mood='happy';const a=$('#catAnim');a.innerHTML=catSVG(S.wear,'happy');restartClass(a,'wiggle',900);say('Meow! The cat loves its clothes.','Tap TA-DA when you are ready.')}
+}
+stage.addEventListener('click',e=>{const el=e.target.closest('.hot');if(el)act(el)});
+stage.addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const el=e.target.closest('.hot');if(el){e.preventDefault();act(el)}});
+
+updateSound();
+homeScreen();
+$('#story').textContent='Pick a game! These games are by Carolina.';$('#hint').textContent='Tap a box to play.';
+</script>
+</body>
+</html>
