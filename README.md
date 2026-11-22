@@ -2,7 +2,7 @@
 
 Little tap-to-play cat games for young kids, designed by Carolina. It started from her poster, "I want mini games about cats!", and it looks like her other game, [You Are a Cat](https://github.com/carlobeschi/carolina-the-cat): the same crayon-blue frame, hand-drawn cat and read-aloud story box.
 
-The home screen shows the nine games, three by three like the boxes on the poster. Tap one to play it.
+The home screen shows all the games three across, like the boxes on the poster. The newest ones have a NEW star. Tap one to play it.
 
 ## The games
 
@@ -15,6 +15,15 @@ The home screen shows the nine games, three by three like the boxes on the poste
 - **Lots of cats.** Carolina's grid of coloured cat heads, as a swap-and-match game. Tap a cat and then the one next to it (or swipe) to swap them and line up three or more of the same colour. Some cats are frozen in ice cubes: a match on them or right next to them breaks the ice and sets the cat free. Each level has one cat rocket: tap ROCKET, then tap where to throw it, and BOOM. Freed cats and finished levels give coins, which fly into the treasure chest like a piggy bank.
 - **Ball paths.** Five red balls and four pathways that cross over each other on the way down. One path ends at the gold ball; the others end in streets where dogs have pooped (ewww!). Tap a number to roll a ball down that path, and find the gold ball before the red balls run out. NEW PATHS mixes them up again. Gold balls are counted on this device.
 - **Wash and clean.** The cat's room is a mess. Rub the mud with the SPONGE, sweep the dust bunnies and cobwebs with the BROOM, and MOVE the rubbish into the bin. MOVE also drags the furniture anywhere you like, and RUB OUT removes anything you don't like. When it is all clean the cat is happy. NEW MESS starts again.
+
+### Six more games
+
+- **Garden with a cat.** Pick a packet of seeds (rose, sunflower, tulip, bluebell or catnip), plant it, and water it until it flowers. PICK it for the bouquet; five flowers make a bouquet. Catnip makes the cat go silly.
+- **Cat café.** Customers sit at the counter and show what they want: milk, a fish cake, a cupcake or a fish biscuit. Tap that food before their patience bar runs out. Happy customers pay coins into the same treasure chest as Lots of cats, and each day brings more customers.
+- **Hide and seek.** The cat hides somewhere in a busy room. Tap where you think it is. At first its ears and tail peek out, then only the tail, then only the tip of the tail. After three tries, MEOW? tells you which part of the room it is in.
+- **Build a cat house.** Pick a box, cushion, scratching post, tunnel, shelf or hammock, and tap where to drop it. It falls onto the floor or onto the pieces below. PLAY sends the cat climbing up to the top.
+- **Cat dance party.** DJ Catnip plays a slow or fast song, and the paw pads light up one at a time. Tap the lit pad to make the cat dance and earn stars.
+- **Adopt a kitten.** Choose the kitten's fur and eye colour and give it a name. Then FEED, PLAY and BRUSH every day, and SLEEP to go to the next day. Every two days it grows, from a tiny kitten to a grown-up cat.
 
 ## Running it
 
