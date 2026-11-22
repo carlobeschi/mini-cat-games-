@@ -30,6 +30,7 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(1.4rem,7vw,1.8rem)
 .chip{background:var(--paper);border:2.5px solid var(--ink);border-radius:999px;padding:2px 12px;font-size:1.05rem;color:var(--ink);font-family:var(--display);line-height:1.4;cursor:pointer;white-space:nowrap}
 .chip:focus-visible{outline:3px dashed var(--hot);outline-offset:2px}
 .frame{background:var(--sky);background-image:radial-gradient(circle,var(--sky-dot) 0 5px,transparent 6px);background-size:56px 56px;padding:8px;border-radius:6px;border:2.5px solid var(--ink)}
+#stage.drawing{touch-action:none}
 #stage{display:block;width:100%;height:auto;background:var(--paper);border-radius:14px;border:2.5px solid var(--ink);touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 .story{background:var(--paper);border:2.5px solid var(--ink);border-radius:14px;padding:10px 14px;color:var(--pen);min-height:4.4em}
 #story{font-size:1.35rem;letter-spacing:.06em;text-transform:uppercase;line-height:1.35;margin:0}
@@ -54,9 +55,13 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(1.4rem,7vw,1.8rem)
 @keyframes pop{0%{transform:scale(.6)}70%{transform:scale(1.1)}100%{transform:scale(1)}}
 .floaty{animation:floaty 1.6s ease-out both;transform-box:fill-box}
 @keyframes floaty{0%{transform:translateY(0) scale(.5);opacity:1}100%{transform:translateY(-110px) scale(1.1);opacity:0}}
+.jit{animation:jit .5s steps(2)}
+@keyframes jit{50%{transform:translate(0,1.5px)}}
 .pulse{animation:pulse 1.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 @keyframes pulse{50%{transform:scale(1.06)}}
-@media (prefers-reduced-motion:reduce){.jump,.wiggle,.twirl,.pop,.floaty,.pulse{animation:none}}
+@media (prefers-reduced-motion:reduce){.jump,.wiggle,.twirl,.pop,.floaty,.jit{animation:jit .5s steps(2)}
+@keyframes jit{50%{transform:translate(0,1.5px)}}
+.pulse{animation:none}}
 </style>
 </head>
 <body>
@@ -219,6 +224,11 @@ const sfx={
   swish(){seq('sine',[[300,900,.16,.12]])},
   off(){seq('sine',[[700,300,.14,.1]])},
   tada(){seq('triangle',[[523,523,.12,.14],[659,659,.12,.14],[784,784,.12,.14],[1047,1047,.35,.16]])},
+  paw(){seq('sine',[[500,300,.07,.12]])},
+  splat(){noise(.25,600,.35,'lowpass');seq('sine',[[260,90,.18,.18]])},
+  plop(){seq('sine',[[600,200,.12,.2]])},
+  ding(){seq('sine',[[1568,1568,.5,.2]])},
+  kick(){seq('sine',[[150,45,.18,.6]])},
   thump(){seq('sine',[[90,60,.14,.5],[90,60,.2,.45]])},
   plink(){seq('triangle',[[900,1400,.1,.14]])},
   pinch(){seq('square',[[1200,900,.06,.06]])},
@@ -247,9 +257,9 @@ $('#soundBtn').addEventListener('click',()=>{S.sound=!S.sound;if(!S.sound)try{sp
 const GAMES=[
   {id:'dress',name:['DRESS UP','THE CAT'],ready:true,icon:()=>`<g transform="translate(0,40) scale(.36)">${catSVG({dress:'pink',hat:'crown'})}</g>`},
   {id:'help',name:['HELP','THE CAT'],ready:true,icon:()=>`<rect x="-24" y="-8" width="48" height="16" rx="8" fill="#f6d2a8" ${K} stroke-width="2.5" transform="rotate(-30)"/><rect x="-24" y="-8" width="48" height="16" rx="8" fill="#f6d2a8" ${K} stroke-width="2.5" transform="rotate(30)"/>${heart(0,0,1.1,'#d8243c')}`},
-  {id:'craft',name:['CRAFT WITH','A CAT'],icon:()=>[[-18,-6,'#8a4fc4'],[16,-12,'#3cb8e0'],[4,14,'#e0508a']].map(([x,y,c])=>`<path d="M${x},${y-12} q6,6 12,2 q-2,8 2,12 q-8,0 -12,6 q-4,-6 -12,-6 q4,-6 2,-12 q6,4 8,-2Z" fill="${c}" stroke="${INK}" stroke-width="1.6"/>`).join('')},
-  {id:'music',name:['MAKE MUSIC','WITH A CAT'],icon:()=>`<path d="M-14,10 V-18 L14,-24 V4" fill="none" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/><ellipse cx="-19" cy="11" rx="7" ry="5.5" fill="#e0508a" ${K} stroke-width="2.4"/><ellipse cx="9" cy="5" rx="7" ry="5.5" fill="#8a4fc4" ${K} stroke-width="2.4"/>`},
-  {id:'cook',name:['COOK WITH','A CAT'],icon:()=>`<path d="M-16,0 L-12,20 H12 L16,0Z" fill="#8a4fc4" ${K} stroke-width="2.5"/><path d="M-19,0 Q-22,-14 -8,-14 Q-4,-26 8,-18 Q22,-18 19,0Z" fill="#f6b3cb" ${K} stroke-width="2.5"/><circle cx="2" cy="-22" r="4.5" fill="#d8243c" stroke="${INK}" stroke-width="1.8"/>`},
+  {id:'craft',name:['CRAFT WITH','A CAT'],ready:true,icon:()=>[[-18,-6,'#8a4fc4'],[16,-12,'#3cb8e0'],[4,14,'#e0508a']].map(([x,y,c])=>`<path d="M${x},${y-12} q6,6 12,2 q-2,8 2,12 q-8,0 -12,6 q-4,-6 -12,-6 q4,-6 2,-12 q6,4 8,-2Z" fill="${c}" stroke="${INK}" stroke-width="1.6"/>`).join('')},
+  {id:'music',name:['MAKE MUSIC','WITH A CAT'],ready:true,icon:()=>`<path d="M-14,10 V-18 L14,-24 V4" fill="none" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/><ellipse cx="-19" cy="11" rx="7" ry="5.5" fill="#e0508a" ${K} stroke-width="2.4"/><ellipse cx="9" cy="5" rx="7" ry="5.5" fill="#8a4fc4" ${K} stroke-width="2.4"/>`},
+  {id:'cook',name:['COOK WITH','A CAT'],ready:true,icon:()=>`<path d="M-16,0 L-12,20 H12 L16,0Z" fill="#8a4fc4" ${K} stroke-width="2.5"/><path d="M-19,0 Q-22,-14 -8,-14 Q-4,-26 8,-18 Q22,-18 19,0Z" fill="#f6b3cb" ${K} stroke-width="2.5"/><circle cx="2" cy="-22" r="4.5" fill="#d8243c" stroke="${INK}" stroke-width="1.8"/>`},
   {id:'sleep',name:['BEDTIME','STORY'],icon:()=>`<path d="M8,-22 A20,20 0 1 0 22,8 A15,15 0 1 1 8,-22Z" fill="#ffd34d" ${K} stroke-width="2.5"/><text x="-26" y="-6" class="lbl" style="font-size:20px">z</text><text x="-34" y="-20" class="lbl" style="font-size:15px">z</text>`},
   {id:'heads',name:['LOTS OF','CATS'],icon:()=>[[-20,4,'#3cb8e0'],[0,-8,'#8a4fc4'],[20,4,'#d6ad45']].map(([x,y,c])=>`<path transform="translate(${x},${y})" d="M-11,10 L-12,-6 L-10,-14 L-4,-7 L4,-7 L10,-14 L12,-6 L11,10Z" fill="${c}" ${K} stroke-width="2.2"/>`).join('')},
   {id:'wash',name:['WASH AND','CLEAN'],icon:()=>[[-14,6,11],[8,-8,9],[14,12,7],[-4,-16,6]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#d7ecfa" ${K} stroke-width="2.2"/><path d="M${x-r*.45},${y-r*.3} q${r*.25},${-r*.3} ${r*.5},${-r*.3}" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>`).join('')},
@@ -526,10 +536,379 @@ function startHelp(){newPatient();helpScreen();
   const p=H.probs[0];
   say(`Help the cat! ${H.pat.name} is poorly. ${p.t==='spikes'?'There are spikes stuck in the fur!':p.t==='scratch'?'There is a scratch!':''}`,nextHint()||'Pick a tool from the side.')}
 
+/* ---------- shared bits for the newer games ---------- */
+const backBtn=title=>`<g class="hot" data-go="home" role="button" tabindex="0" aria-label="Back to all the games">
+      <circle cx="36" cy="36" r="22" fill="#fffaf6" ${K}/><path d="M46,36 H26 M34,27 L25,36 L34,45" fill="none" stroke="#2c8fd6" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></g>
+    <text x="70" y="45" class="ttl" style="font-size:26px">${title}</text>`;
+// a stage point from a pointer event
+function stagePt(e){const m=stage.getScreenCTM();if(!m)return{x:0,y:0};const p=new DOMPoint(e.clientX,e.clientY).matrixTransform(m.inverse());return{x:p.x,y:p.y}}
+function note(midi,type='triangle',dur=.9,vol=.22){
+  const a=ac();if(!a)return;const t=a.currentTime,f=440*Math.pow(2,(midi-69)/12);
+  const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=f;
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g).connect(a.destination);o.start(t);o.stop(t+dur+.05);
+}
+function noise(dur,freq,vol,type='highpass'){
+  const a=ac();if(!a)return;const t=a.currentTime,len=Math.floor(a.sampleRate*dur);
+  const b=a.createBuffer(1,len,a.sampleRate),ch=b.getChannelData(0);for(let i=0;i<len;i++)ch[i]=Math.random()*2-1;
+  const s=a.createBufferSource();s.buffer=b;const f=a.createBiquadFilter();f.type=type;f.frequency.value=freq;
+  const g=a.createGain();g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  s.connect(f).connect(g).connect(a.destination);s.start(t);
+}
+const COLOURS=['#e0508a','#f38db5','#8a4fc4','#2c8fd6','#3cb8b0','#1f8a4c','#ffd34d','#f5891f','#d8243c','#1d1a1f'];
+const COLOUR_NAMES=['pink','light pink','purple','blue','teal','green','yellow','orange','red','black'];
+
+/* ---------- Craft with a cat ----------
+   A big empty piece of paper. Draw or write with the pen, stamp paw prints, or splat paint, in any colour from the bottom. */
+const PAW=`<ellipse cx="0" cy="4" rx="9" ry="7.5"/><ellipse cx="-10" cy="-6" rx="3.6" ry="4.6"/><ellipse cx="-3.6" cy="-11" rx="3.6" ry="4.6"/><ellipse cx="3.6" cy="-11" rx="3.6" ry="4.6"/><ellipse cx="10" cy="-6" rx="3.6" ry="4.6"/>`;
+const SPLAT=()=>{let d='';const n=11;for(let i=0;i<=n;i++){const a=i/n*Math.PI*2,r=i%2?9+Math.random()*4:15+Math.random()*7;d+=(i?'L':'M')+(Math.cos(a)*r).toFixed(1)+','+(Math.sin(a)*r).toFixed(1)}
+  const drops=[0,1,2].map(()=>{const a=Math.random()*Math.PI*2,r=24+Math.random()*8;return `<circle cx="${(Math.cos(a)*r).toFixed(1)}" cy="${(Math.sin(a)*r).toFixed(1)}" r="${(2+Math.random()*2.5).toFixed(1)}"/>`}).join('');
+  return `<path d="${d}Z" stroke-linejoin="round"/>${drops}`};
+const PAPER={x:16,y:66,w:368,h:330};
+const C={tool:'pen',colour:0,marks:[],drawing:null};
+try{const d=JSON.parse(localStorage.getItem('catCraft')||'null');if(d&&Array.isArray(d.marks))C.marks=d.marks.slice(-400);if(d&&d.colour>=0)C.colour=d.colour%COLOURS.length}catch(e){}
+function saveCraft(){try{localStorage.setItem('catCraft',JSON.stringify({marks:C.marks.slice(-400),colour:C.colour}))}catch(e){}}
+function markSVG(m){
+  if(m.k==='pen')return `<path d="${m.d}" fill="none" stroke="${m.c}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>`;
+  if(m.k==='paw')return `<g transform="translate(${m.x},${m.y}) rotate(${m.r}) scale(1.3)" fill="${m.c}">${PAW}</g>`;
+  if(m.k==='splat')return `<g transform="translate(${m.x},${m.y}) rotate(${m.r})" fill="${m.c}">${m.s}</g>`;
+  return '';
+}
+const CRAFT_TOOLS=[
+  {id:'pen',name:'PEN',icon:c=>`<g transform="rotate(35)"><rect x="-4" y="-16" width="8" height="24" rx="2" fill="${c}" ${K} stroke-width="2"/><path d="M-4,8 L0,16 L4,8Z" fill="#f6d2a8" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/></g>`},
+  {id:'paw',name:'PAWS',icon:c=>`<g fill="${c}" stroke="${INK}" stroke-width="1.4" transform="scale(1.15)">${PAW}</g>`},
+  {id:'splat',name:'SPLAT',icon:c=>`<g fill="${c}" stroke="${INK}" stroke-width="1.4"><path d="M0,-14 L4,-6 L13,-9 L8,-1 L15,6 L5,6 L3,15 L-3,7 L-12,11 L-8,2 L-15,-4 L-6,-6Z" stroke-linejoin="round"/><circle cx="14" cy="-14" r="2.5"/></g>`},
+  {id:'undo',name:'UNDO',icon:()=>`<path d="M10,8 A11,11 0 1 0 -8,-4" fill="none" stroke="#2c8fd6" stroke-width="4" stroke-linecap="round"/><path d="M-14,-12 L-8,-3 L-1,-10" fill="none" stroke="#2c8fd6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`},
+];
+function craftScreen(){
+  const c=COLOURS[C.colour];
+  const tools=CRAFT_TOOLS.map((t,i)=>{const x=16+i*76,on=C.tool===t.id;
+    return `<g class="hot" data-ctool="${t.id}" role="button" tabindex="0" aria-pressed="${on}" aria-label="${t.name}">
+      <rect x="${x}" y="404" width="70" height="50" rx="9" fill="${on?'#f3a3c6':'#fff'}" stroke="${INK}" stroke-width="${on?3:2}"/>
+      <g transform="translate(${x+35},422)">${t.icon(c)}</g><text x="${x+35}" y="449" text-anchor="middle" class="tab" style="font-size:12px">${t.name}</text></g>`}).join('')
+    +`<g class="hot" data-ctool="clear" role="button" tabindex="0" aria-label="New paper">
+      <rect x="320" y="404" width="64" height="50" rx="9" fill="#fff" stroke="${INK}" stroke-width="2"/>
+      <path d="M340,412 h18 l6,6 v18 h-24Z" fill="#fff" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M358,412 v6 h6" fill="none" stroke="${INK}" stroke-width="2"/>
+      <text x="352" y="449" text-anchor="middle" class="tab" style="font-size:12px">NEW</text></g>`;
+  const dots=COLOURS.map((col,i)=>{const x=34+i*37,on=i===C.colour;
+    return `<g class="hot" data-colour="${i}" role="button" tabindex="0" aria-pressed="${on}" aria-label="${COLOUR_NAMES[i]}">
+      ${on?`<circle cx="${x}" cy="484" r="19" fill="none" stroke="${INK}" stroke-width="2.5" stroke-dasharray="4 3"/>`:''}
+      <circle cx="${x}" cy="484" r="${on?15:13}" fill="${col}" stroke="${INK}" stroke-width="2"/></g>`}).join('');
+  stage.innerHTML=DEFS+`<defs><clipPath id="paperClip"><rect x="${PAPER.x}" y="${PAPER.y}" width="${PAPER.w}" height="${PAPER.h}" rx="6"/></clipPath></defs>
+    ${backBtn('craft with a cat')}
+    <g transform="translate(352,52) scale(.3)" pointer-events="none">${catSVG({},'happy')}</g>
+    <rect x="${PAPER.x+4}" y="${PAPER.y+5}" width="${PAPER.w}" height="${PAPER.h}" rx="6" fill="#e6dccf"/>
+    <rect id="paper" x="${PAPER.x}" y="${PAPER.y}" width="${PAPER.w}" height="${PAPER.h}" rx="6" fill="#fff" stroke="${INK}" stroke-width="2.5"/>
+    <g id="marks" clip-path="url(#paperClip)" pointer-events="none">${C.marks.map(markSVG).join('')}</g>
+    ${tools}${dots}`;
+  stage.classList.add('drawing');
+}
+const inPaper=p=>p.x>=PAPER.x&&p.x<=PAPER.x+PAPER.w&&p.y>=PAPER.y&&p.y<=PAPER.y+PAPER.h;
+const r1=v=>Math.round(v*10)/10;
+function craftDown(e){
+  if(S.screen!=='craft')return;const p=stagePt(e);if(!inPaper(p))return;
+  e.preventDefault();const col=COLOURS[C.colour];const g=$('#marks');
+  if(C.tool==='pen'){
+    C.drawing={k:'pen',c:col,d:`M${r1(p.x)},${r1(p.y)} l0.1,0`};C.marks.push(C.drawing);
+    g.insertAdjacentHTML('beforeend',markSVG(C.drawing));C.el=g.lastElementChild;
+    try{stage.setPointerCapture(e.pointerId)}catch(err){}
+  }else if(C.tool==='paw'){
+    const m={k:'paw',c:col,x:r1(p.x),y:r1(p.y),r:Math.round(Math.random()*50-25)};C.marks.push(m);g.insertAdjacentHTML('beforeend',markSVG(m));
+    sfx.paw();if(Math.random()<.15)say('Pitter patter, paw prints!','Tap a colour at the bottom to change it.');saveCraft();
+  }else if(C.tool==='splat'){
+    const m={k:'splat',c:col,x:r1(p.x),y:r1(p.y),r:Math.round(Math.random()*360),s:SPLAT()};C.marks.push(m);g.insertAdjacentHTML('beforeend',markSVG(m));
+    sfx.splat();saveCraft();
+  }
+}
+function craftMove(e){
+  if(!C.drawing)return;const p=stagePt(e);
+  C.drawing.d+=` L${r1(Math.min(Math.max(p.x,PAPER.x),PAPER.x+PAPER.w))},${r1(Math.min(Math.max(p.y,PAPER.y),PAPER.y+PAPER.h))}`;
+  C.el&&C.el.setAttribute('d',C.drawing.d);
+}
+function craftUp(){if(C.drawing){C.drawing=null;C.el=null;saveCraft()}}
+stage.addEventListener('pointerdown',craftDown);
+stage.addEventListener('pointermove',craftMove);
+stage.addEventListener('pointerup',craftUp);
+stage.addEventListener('pointercancel',craftUp);
+function craftAct(el){
+  const t=el.dataset.ctool;
+  if(t==='undo'){if(!C.marks.length){say('The paper is empty.','Pick PEN, PAWS or SPLAT, then tap the paper.');return}
+    C.marks.pop();saveCraft();sfx.off();craftScreen();return}
+  if(t==='clear'){if(!C.marks.length){say('The paper is already empty.','Pick PEN, PAWS or SPLAT, then tap the paper.');return}
+    C.marks=[];saveCraft();sfx.swish();craftScreen();say('A new piece of paper!','What will you make?');return}
+  sfx.tap();C.tool=t;craftScreen();
+  say({pen:'The pen! Draw or write anything you like.',paw:'Paw prints! Tap the paper to stamp them.',splat:'Splat! Tap the paper to splash paint.'}[t],'Pick a colour at the bottom.');
+}
+
+/* ---------- Make music with a cat ----------
+   A colourful piano, a drum, a cat guitar, DJ Catnip and a dance floor where the cat dances. */
+const KEYS=[60,62,64,65,67,69,71,72];
+const KEY_COLS=['#d8243c','#f5891f','#ffd34d','#7fc36b','#3cb8b0','#2c8fd6','#8a4fc4','#e0508a'];
+const GUITAR=[[52,'#d8243c'],[57,'#ffd34d'],[62,'#2c8fd6'],[67,'#e0508a']];
+const M={dj:null,beat:0,move:0};
+const FLOOR_COLS=['#f38db5','#7cc6f0','#ffd34d','#c9a6ef','#9ccf6b','#f9a03f'];
+function musicScreen(){
+  const floor=[];for(let r=0;r<2;r++)for(let c=0;c<5;c++)floor.push(`<rect class="tile" data-i="${r*5+c}" x="${18+c*38}" y="${208+r*18}" width="38" height="18" fill="${FLOOR_COLS[(r*5+c)%FLOOR_COLS.length]}" stroke="${INK}" stroke-width="1.5"/>`);
+  const keys=KEYS.map((n,i)=>`<g class="hot" data-key="${i}" role="button" tabindex="0" aria-label="Piano key ${i+1}">
+      <rect class="pk" x="${16+i*46}" y="400" width="44" height="104" rx="6" fill="${KEY_COLS[i]}" stroke="${INK}" stroke-width="2.5"/>
+      <circle cx="${38+i*46}" cy="486" r="6" fill="#fff" opacity=".7"/></g>`).join('')
+    +[0,1,3,4,5].map(i=>`<rect x="${48+i*46}" y="400" width="24" height="56" rx="4" fill="${INK}" pointer-events="none"/>`).join('');
+  stage.innerHTML=DEFS+`${backBtn('make music')}
+    <!-- the dance floor -->
+    <g class="hot" data-go="dance" role="button" tabindex="0" aria-label="Dance floor: make the cat dance">
+      <rect x="16" y="64" width="194" height="184" rx="8" fill="#2b2240" stroke="${INK}" stroke-width="2.5"/>
+      ${[[34,96,'#ffd34d'],[190,100,'#f38db5'],[44,150,'#7cc6f0'],[184,160,'#ffd34d']].map(([x,y,c])=>`<path d="${starPath(x,y,6)}" fill="${c}"/>`).join('')}
+      <g id="floor">${floor.join('')}</g>
+      <text x="113" y="84" text-anchor="middle" class="tab" style="font-size:13px;fill:#fff">DANCE FLOOR</text>
+      <g transform="translate(113,214) scale(.85)"><g id="catAnim" class="anim">${catSVG(S.wear,'happy')}</g></g></g>
+    <!-- DJ Catnip -->
+    <g class="hot" data-go="dj" role="button" tabindex="0" aria-label="DJ Catnip: start or stop the music">
+      <rect x="222" y="64" width="162" height="184" rx="8" fill="#fff" stroke="${INK}" stroke-width="2"/>
+      <g transform="translate(303,176) scale(.72)"><g id="djAnim" class="anim">${catSVG({},'happy',{head:'#3a3346',body:'#9ccf6b',ear:'#f38db5'})}
+        <path d="M-32,-112 Q0,-160 32,-112" fill="none" stroke="${INK}" stroke-width="5"/><rect x="-38" y="-118" width="12" height="20" rx="5" fill="#e0508a" ${K} stroke-width="2.5"/><rect x="26" y="-118" width="12" height="20" rx="5" fill="#e0508a" ${K} stroke-width="2.5"/></g></g>
+      <rect x="232" y="164" width="142" height="40" rx="6" fill="#3a3346" ${K}/>
+      <g id="discs"><circle cx="270" cy="176" r="14" fill="${INK}" stroke="#8d8d9a" stroke-width="2"/><circle cx="270" cy="176" r="4" fill="#e0508a"/>
+        <circle cx="336" cy="176" r="14" fill="${INK}" stroke="#8d8d9a" stroke-width="2"/><circle cx="336" cy="176" r="4" fill="#ffd34d"/></g>
+      <circle cx="303" cy="193" r="4" fill="${M.dj?'#7fc36b':'#d8243c'}" stroke="${INK}" stroke-width="1.5"/>
+      <text x="303" y="234" text-anchor="middle" class="tab" style="font-size:15px">DJ CATNIP</text></g>
+    <!-- the drum -->
+    <g class="hot" data-go="drum" role="button" tabindex="0" aria-label="Drum">
+      <g id="drum"><path d="M24,286 V340 Q74,362 124,340 V286" fill="#d8243c" ${K}/>
+      <path d="M24,300 L44,346 L64,300 L84,350 L104,300 L124,342" fill="none" stroke="#ffd34d" stroke-width="3" stroke-linejoin="round"/>
+      <ellipse cx="74" cy="286" rx="50" ry="16" fill="#fffaf6" ${K}/></g>
+      <path d="M118,262 L92,282 M134,268 L104,286" stroke="${INK}" stroke-width="4" stroke-linecap="round"/><circle cx="118" cy="262" r="5" fill="#f6d2a8" stroke="${INK}" stroke-width="2"/><circle cx="134" cy="268" r="5" fill="#f6d2a8" stroke="${INK}" stroke-width="2"/>
+      <text x="74" y="384" text-anchor="middle" class="tab" style="font-size:13px">DRUM</text></g>
+    <!-- the cat guitar: its body is a cat's head with ears -->
+    <g id="guitar">
+      <path d="M156,292 L172,268 L186,286 Q206,280 226,286 L240,268 L256,292 Q270,320 252,346 Q206,370 160,346 Q142,320 156,292Z" fill="#f38db5" ${K}/>
+      <circle cx="206" cy="318" r="15" fill="#3a3346" stroke="${INK}" stroke-width="2"/>
+      <circle cx="184" cy="302" r="3" fill="${INK}"/><circle cx="228" cy="302" r="3" fill="${INK}"/>
+      <rect x="252" y="306" width="110" height="24" rx="4" fill="#a8652f" ${K} stroke-width="2.5"/>
+      <rect x="362" y="298" width="22" height="40" rx="6" fill="#a8652f" ${K} stroke-width="2.5"/>
+      ${[0,1,2,3].map(i=>`<path d="M${276+i*20},306 V330" stroke="#d6ad45" stroke-width="2"/>`).join('')}
+      ${GUITAR.map(([n,c],i)=>`<g class="hot" data-string="${i}" role="button" tabindex="0" aria-label="Guitar string ${i+1}">
+        <rect x="186" y="${303+i*7}" width="190" height="7" fill="transparent"/>
+        <path class="str" d="M190,${306+i*7} H372" stroke="${c}" stroke-width="2.5"/></g>`).join('')}
+      <text x="270" y="384" text-anchor="middle" class="tab" style="font-size:13px">CAT GUITAR</text></g>
+    <g id="fx" pointer-events="none"></g>
+    ${keys}`;
+}
+function noteFx(x,y,c){
+  const fx=$('#fx');if(!fx)return;const id='n'+Math.random().toString(36).slice(2,7);
+  fx.insertAdjacentHTML('beforeend',`<g id="${id}" transform="translate(${x},${y})"><g class="floaty"><path d="M0,0 V-18 L10,-21 V-4" fill="none" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/><ellipse cx="-3" cy="1" rx="5" ry="4" fill="${c}" stroke="${INK}" stroke-width="2"/></g></g>`);
+  setTimeout(()=>{const e=document.getElementById(id);e&&e.remove()},1600);
+}
+const MOVES=['jump','wiggle','twirl'];
+function dance(){const a=$('#catAnim');if(!a)return;const m=MOVES[M.move++%MOVES.length];restartClass(a,m,m==='twirl'?1200:900)}
+function flashFloor(){document.querySelectorAll('#floor .tile').forEach(t=>t.setAttribute('fill',pick(FLOOR_COLS)))}
+const BEAT=[[1,0,1],[0,1,0],[1,0,0],[0,1,1],[1,0,1],[0,1,0],[1,1,0],[0,1,1]]; // kick, hat, clap per step
+const BASS=[48,48,55,55,53,53,55,52];
+function djStep(){
+  const i=M.beat++%8,[k,h,cl]=BEAT[i];
+  if(k)sfx.kick();if(h)noise(.05,7000,.12);if(cl)noise(.12,1500,.18,'bandpass');
+  if(i%2===0)note(BASS[(Math.floor(M.beat/2))%8],'square',.22,.08);
+  if(i%2===0){flashFloor();const d=$('#djAnim');d&&restartClass(d,'jump',500)}
+  if(i===0)dance();
+}
+function djToggle(){
+  if(M.dj){clearInterval(M.dj);M.dj=null;musicScreen();say('DJ Catnip stops the music.','Tap DJ CATNIP to start it again.');return}
+  M.beat=0;M.dj=setInterval(djStep,240);musicScreen();djStep();
+  say('DJ Catnip plays a song! Everybody dance!','Play the piano, the drum and the guitar along with it.');
+}
+function musicStop(){if(M.dj){clearInterval(M.dj);M.dj=null}}
+function musicAct(el){
+  if(el.dataset.key!==undefined){const i=+el.dataset.key;note(KEYS[i],'triangle',1.1,.25);note(KEYS[i]+12,'sine',.6,.06);
+    const r=el.querySelector('.pk');r&&restartClass(r,'pop',300);noteFx(38+i*46,396,KEY_COLS[i]);if(!M.dj&&Math.random()<.3)dance();return true}
+  if(el.dataset.string!==undefined){const i=+el.dataset.string,[n,c]=GUITAR[i];note(n,'sawtooth',.9,.07);note(n+12,'triangle',.9,.12);
+    const s=el.querySelector('.str');s&&restartClass(s,'jit',500);noteFx(300,296,c);if(!M.dj&&Math.random()<.3)dance();return true}
+  const go=el.dataset.go;
+  if(go==='drum'){sfx.kick();noise(.15,900,.25,'bandpass');restartClass($('#drum'),'pop',300);noteFx(74,272,'#d8243c');if(!M.dj&&Math.random()<.3)dance();return true}
+  if(go==='dj'){djToggle();return true}
+  if(go==='dance'){dance();flashFloor();sfx.tap();say(pick(['Look at the cat dance!','Shake those paws!','What a dancing cat!','Twirl, cat, twirl!']),M.dj?'':'Tap DJ CATNIP for some music.');return true}
+  return false;
+}
+
+/* ---------- Cook with a cat ----------
+   A recipe book with two pages. Only the first recipe is open; cooking it unlocks the next, and so on.
+   Page 2 opens when page 1 is complete, and works the same way. To cook: put the right things in the bowl,
+   stir, then cook it (oven, pan or freezer). */
+const ING={
+  egg:{n:'eggs',a:`<ellipse cx="0" cy="2" rx="12" ry="15" fill="#fff" ${K} stroke-width="2.4"/><ellipse cx="-4" cy="-4" rx="3" ry="4" fill="#f4efe6"/>`},
+  flour:{n:'flour',a:`<path d="M-14,-12 L14,-12 L16,18 H-16Z" fill="#f4e6c8" ${K} stroke-width="2.4"/><path d="M-14,-12 Q0,-20 14,-12" fill="#fff" ${K} stroke-width="2.4"/><path d="M-8,4 q8,-8 16,0" fill="none" stroke="#d6ad45" stroke-width="2.4"/>`},
+  milk:{n:'milk',a:`<path d="M-11,-8 L-11,18 H11 V-8 L5,-16 H-5Z" fill="#fff" ${K} stroke-width="2.4"/><path d="M-11,2 H11 V12 H-11Z" fill="#7cc6f0"/><rect x="-4" y="-21" width="8" height="5" fill="#2c8fd6" stroke="${INK}" stroke-width="1.8"/>`},
+  sugar:{n:'sugar',a:`<rect x="-12" y="-8" width="24" height="26" rx="5" fill="#fff" ${K} stroke-width="2.4"/><rect x="-14" y="-15" width="28" height="8" rx="3" fill="#f38db5" ${K} stroke-width="2.2"/>${[[-5,2],[4,6],[-2,11]].map(([x,y])=>`<rect x="${x}" y="${y}" width="5" height="5" fill="#fff" stroke="${INK}" stroke-width="1.2"/>`).join('')}`},
+  butter:{n:'butter',a:`<ellipse cx="0" cy="10" rx="18" ry="6" fill="#d7ecfa" ${K} stroke-width="2.2"/><path d="M-12,8 V-4 L-6,-10 H14 V2 L8,8Z" fill="#ffe873" ${K} stroke-width="2.2"/>`},
+  strawberry:{n:'strawberries',a:`<path d="M0,16 Q-15,4 -13,-5 Q-10,-11 0,-9 Q10,-11 13,-5 Q15,4 0,16Z" fill="#d8243c" ${K} stroke-width="2.2"/><path d="M-8,-10 L0,-6 L8,-10 L4,-14 L0,-11 L-4,-14Z" fill="#7fc36b" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round"/>${[[-5,-1],[4,0],[0,6],[-6,6],[6,6]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1" fill="#ffd34d"/>`).join('')}`},
+  banana:{n:'bananas',a:`<path d="M-16,-10 Q-14,14 14,12 Q18,10 16,6 Q-4,8 -10,-12Z" fill="#ffd34d" ${K} stroke-width="2.2"/><path d="M-16,-10 l-2,-4" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`},
+  apple:{n:'apples',a:`<path d="M0,-8 Q-16,-14 -15,2 Q-13,18 0,15 Q13,18 15,2 Q16,-14 0,-8Z" fill="#7fc36b" ${K} stroke-width="2.2"/><path d="M0,-8 q1,-7 4,-10" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/><path d="M3,-12 q8,-6 10,0 q-6,4 -10,0Z" fill="#1f8a4c" stroke="${INK}" stroke-width="1.5"/>`},
+  chocolate:{n:'chocolate',a:`<rect x="-13" y="-16" width="26" height="32" rx="3" fill="#6b3b1f" ${K} stroke-width="2.4"/><path d="M0,-16 V16 M-13,-5 H13 M-13,6 H13" stroke="#8a5a2b" stroke-width="2"/>`},
+  cheese:{n:'cheese',a:`<path d="M-17,12 L-17,-4 L16,-12 L17,12Z" fill="#ffd34d" ${K} stroke-width="2.2"/><circle cx="-8" cy="4" r="3" fill="#f1c232"/><circle cx="6" cy="-1" r="2.5" fill="#f1c232"/><circle cx="8" cy="7" r="2" fill="#f1c232"/>`},
+  tomato:{n:'tomatoes',a:`<circle cx="0" cy="3" r="14" fill="#e8473f" ${K} stroke-width="2.2"/><path d="M-7,-10 L0,-6 L7,-10 L3,-13 L0,-9 L-3,-13Z" fill="#1f8a4c" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"/>`},
+  fish:{n:'fish',a:`<path d="M-16,0 q14,-14 28,0 q-14,14 -28,0Z M12,0 l9,-8 v16Z" fill="#f9a03f" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/><circle cx="-8" cy="-2" r="2" fill="${INK}"/>`},
+  bread:{n:'bread',a:`<path d="M-16,14 V-2 Q-18,-14 -6,-14 H6 Q18,-14 16,-2 V14Z" fill="#e3b26b" ${K} stroke-width="2.2"/><path d="M-12,12 V-2 Q-13,-9 -5,-9 H5 Q13,-9 12,-2 V12Z" fill="#fbe7c4"/>`},
+  rice:{n:'rice',a:`<path d="M-17,0 H17 Q15,16 0,16 Q-15,16 -17,0Z" fill="#2c8fd6" ${K} stroke-width="2.2"/><path d="M-15,0 Q-12,-12 0,-11 Q12,-12 15,0Z" fill="#fff" stroke="${INK}" stroke-width="2"/>`},
+  carrot:{n:'carrots',a:`<path d="M-4,-8 L6,-6 L0,18Z" fill="#f5891f" ${K} stroke-width="2.2"/><path d="M1,-7 q-6,-10 -2,-13 M1,-7 q2,-10 8,-12 M1,-7 q-10,-6 -12,-2" fill="none" stroke="#1f8a4c" stroke-width="3" stroke-linecap="round"/>`},
+};
+const DISH={
+  cupcakes:`<path d="M-16,0 L-12,20 H12 L16,0Z" fill="#8a4fc4" ${K} stroke-width="2.5"/><path d="M-19,0 Q-22,-14 -8,-14 Q-4,-26 8,-18 Q22,-18 19,0Z" fill="#f6b3cb" ${K} stroke-width="2.5"/><circle cx="2" cy="-22" r="4.5" fill="#d8243c" stroke="${INK}" stroke-width="1.8"/>`,
+  pancakes:`<ellipse cx="0" cy="14" rx="24" ry="6" fill="#fff" ${K} stroke-width="2"/>${[8,1,-6].map(y=>`<ellipse cx="0" cy="${y}" rx="18" ry="6" fill="#e3b26b" ${K} stroke-width="2"/>`).join('')}<path d="M-10,-9 Q0,-14 10,-9 L8,-2 Q4,4 2,-3 Q-2,2 -6,-3Z" fill="#a8652f" opacity=".85"/><rect x="-5" y="-15" width="10" height="7" fill="#ffe873" stroke="${INK}" stroke-width="1.5"/>`,
+  'fruit salad':`<path d="M-22,0 H22 Q20,20 0,20 Q-20,20 -22,0Z" fill="#fff" ${K} stroke-width="2.4"/><circle cx="-10" cy="-3" r="7" fill="#d8243c" stroke="${INK}" stroke-width="1.8"/><circle cx="3" cy="-6" r="7" fill="#7fc36b" stroke="${INK}" stroke-width="1.8"/><path d="M8,-2 q8,-10 14,-2" fill="#ffd34d" stroke="${INK}" stroke-width="1.8"/>`,
+  'cheese toast':`<path d="M-18,14 V-2 Q-20,-16 -6,-16 H6 Q20,-16 18,-2 V14Z" fill="#c8853b" ${K} stroke-width="2.2"/><path d="M-15,-4 Q-16,-12 -6,-12 H6 Q16,-12 15,-4 V2 Q10,10 6,2 Q2,8 -2,2 Q-8,10 -15,4Z" fill="#ffd34d" stroke="${INK}" stroke-width="1.8"/>`,
+  pizza:`<circle r="20" fill="#e3b26b" ${K} stroke-width="2.4"/><circle r="15" fill="#e8473f"/>${[[-6,-6],[7,-3],[-2,8],[8,9]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="3.5" fill="#fff6c8" stroke="${INK}" stroke-width="1.2"/>`).join('')}<path d="M0,0 L0,-20 M0,0 L17,10 M0,0 L-17,10" stroke="${INK}" stroke-width="1.4"/>`,
+  'fish pie':`<path d="M-22,0 H22 L18,18 H-18Z" fill="#d8e0ec" ${K} stroke-width="2.4"/><path d="M-22,0 Q-20,-14 0,-14 Q20,-14 22,0Z" fill="#f1c232" ${K} stroke-width="2.4"/><path d="M-6,-8 q6,-6 12,0 q-6,6 -12,0Z M6,-8 l5,-4 v8Z" fill="#f9a03f" stroke="${INK}" stroke-width="1.4"/>`,
+  smoothie:`<path d="M-12,-18 H12 L9,20 H-9Z" fill="#f6b3cb" ${K} stroke-width="2.4"/><path d="M-12,-18 H12" stroke="#fff" stroke-width="3"/><path d="M4,-18 L10,-30" stroke="#2c8fd6" stroke-width="3.5" stroke-linecap="round"/><circle cx="-12" cy="-16" r="5" fill="#d8243c" stroke="${INK}" stroke-width="1.6"/>`,
+  cookies:[[-9,4],[9,-4]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="13" fill="#e3b26b" ${K} stroke-width="2.2"/><circle cx="${x-4}" cy="${y-3}" r="2.2" fill="#6b3b1f"/><circle cx="${x+4}" cy="${y+2}" r="2.2" fill="#6b3b1f"/><circle cx="${x-1}" cy="${y+5}" r="1.8" fill="#6b3b1f"/>`).join(''),
+  sushi:[-11,11].map(x=>`<circle cx="${x}" cy="2" r="11" fill="#2f4a3a" ${K} stroke-width="2.2"/><circle cx="${x}" cy="2" r="7.5" fill="#fff"/><circle cx="${x}" cy="2" r="3.5" fill="#f9a03f"/>`).join(''),
+  'tomato soup':`<path d="M-22,-2 H22 Q20,20 0,20 Q-20,20 -22,-2Z" fill="#fff" ${K} stroke-width="2.4"/><ellipse cx="0" cy="-2" rx="22" ry="5" fill="#e8473f" ${K} stroke-width="2"/><path d="M-6,-10 q-3,-5 0,-10 M4,-10 q-3,-5 0,-10" fill="none" stroke="#9fb9d6" stroke-width="2" stroke-linecap="round"/>`,
+  'chocolate cake':`<path d="M-20,-6 H20 V16 H-20Z" fill="#6b3b1f" ${K} stroke-width="2.4"/><path d="M-20,-6 H20 V0 Q14,6 10,0 Q4,6 0,0 Q-6,6 -10,0 Q-16,6 -20,0Z" fill="#f6b3cb" stroke="${INK}" stroke-width="1.8"/><rect x="-2" y="-18" width="4" height="12" fill="#7cc6f0" stroke="${INK}" stroke-width="1.4"/><path d="M0,-18 q-3,-4 0,-8 q3,4 0,8Z" fill="#ffd34d"/>`,
+  'ice cream':`<path d="M-12,-4 L0,22 L12,-4Z" fill="#e3b26b" ${K} stroke-width="2.2"/><circle cx="-6" cy="-8" r="8" fill="#f6b3cb" ${K} stroke-width="2.2"/><circle cx="6" cy="-8" r="8" fill="#fff6c8" ${K} stroke-width="2.2"/><circle cx="0" cy="-18" r="8" fill="#a8652f" ${K} stroke-width="2.2"/><circle cx="0" cy="-27" r="3.5" fill="#d8243c" stroke="${INK}" stroke-width="1.5"/>`,
+};
+const RECIPES=[
+  {d:'cupcakes',i:['flour','egg','sugar'],how:'oven'},
+  {d:'pancakes',i:['flour','egg','milk'],how:'pan'},
+  {d:'fruit salad',i:['strawberry','banana','apple'],how:'none'},
+  {d:'cheese toast',i:['bread','cheese','butter'],how:'oven'},
+  {d:'pizza',i:['flour','tomato','cheese'],how:'oven'},
+  {d:'fish pie',i:['fish','milk','butter'],how:'oven'},
+  {d:'smoothie',i:['banana','strawberry','milk'],how:'none'},
+  {d:'cookies',i:['flour','butter','chocolate'],how:'oven'},
+  {d:'sushi',i:['rice','fish','carrot'],how:'none'},
+  {d:'tomato soup',i:['tomato','carrot','milk'],how:'pan'},
+  {d:'chocolate cake',i:['flour','egg','chocolate'],how:'oven'},
+  {d:'ice cream',i:['milk','sugar','strawberry'],how:'freeze'},
+];
+const PER_PAGE=6;
+const CK={page:0,done:0,r:null,added:[],stirs:0,step:'book',shelf:[]};
+try{const d=JSON.parse(localStorage.getItem('catCook')||'null');if(d&&d.done>=0)CK.done=Math.min(d.done,RECIPES.length)}catch(e){}
+function saveCook(){try{localStorage.setItem('catCook',JSON.stringify({done:CK.done}))}catch(e){}}
+const padlock=(x,y,s=1)=>`<g transform="translate(${x},${y}) scale(${s})"><path d="M-8,-4 V-10 A8,8 0 0 1 8,-10 V-4" fill="none" stroke="${INK}" stroke-width="3.5"/><rect x="-12" y="-5" width="24" height="20" rx="4" fill="#d6ad45" ${K} stroke-width="2.4"/><circle cx="0" cy="3" r="2.6" fill="${INK}"/><path d="M0,4 v6" stroke="${INK}" stroke-width="2.6" stroke-linecap="round"/></g>`;
+function bookScreen(){
+  CK.step='book';
+  const pageOpen=CK.page===0||CK.done>=PER_PAGE;
+  let cells='';
+  for(let k=0;k<PER_PAGE;k++){
+    const i=CK.page*PER_PAGE+k,r=RECIPES[i],c=k%2,row=Math.floor(k/2),x=40+c*164,y=102+row*96;
+    const done=i<CK.done,open=pageOpen&&i<=CK.done;
+    cells+=`<g class="hot" data-recipe="${i}" role="button" tabindex="0" aria-label="${r.d}${done?', cooked':open?'':', locked'}">
+      <rect x="${x}" y="${y}" width="152" height="86" rx="8" fill="${open?'#fff':'#efe7e0'}" stroke="${INK}" stroke-width="2"/>
+      <text x="${x+12}" y="${y+22}" class="tab" style="font-size:15px;fill:var(--pen)">${i+1}</text>
+      <g transform="translate(${x+46},${y+48})" ${open?'':'opacity=".35"'}>${DISH[r.d]}</g>
+      ${open?`<text x="${x+108}" y="${y+50}" text-anchor="middle" class="tab" style="font-size:14px">${r.d.toUpperCase().replace(' ','</tspan><tspan x="'+(x+108)+'" dy="17">').replace(/^/,'<tspan>')}</tspan></text>`:padlock(x+108,y+42,1.1)}
+      ${done?`<path d="${starPath(x+136,y+16,10)}" fill="#ffd34d" stroke="${INK}" stroke-width="1.8"/>`:''}
+      ${open&&!done?`<rect class="pulse" x="${x+84}" y="${y+64}" width="50" height="16" rx="8" fill="#e0508a"/><text x="${x+109}" y="${y+76}" text-anchor="middle" class="soon" style="font-size:11px">COOK!</text>`:''}</g>`;
+  }
+  const lockMsg=pageOpen?'':`<g pointer-events="none"><rect x="70" y="190" width="260" height="110" rx="14" fill="#fff" stroke="#8a4fc4" stroke-width="3"/>
+      ${padlock(200,222,1.4)}<text x="200" y="266" text-anchor="middle" class="tab" style="font-size:17px;fill:#8a4fc4">YOU NEED TO COMPLETE</text>
+      <text x="200" y="288" text-anchor="middle" class="tab" style="font-size:17px;fill:#8a4fc4">PAGE 1 FIRST</text></g>`;
+  stage.innerHTML=DEFS+`${backBtn('cook with a cat')}
+    <path d="M26,74 H374 V402 H26Z" fill="#f6efff" stroke="#8a4fc4" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M200,74 V402" stroke="#c9a6ef" stroke-width="2" stroke-dasharray="5 5"/>
+    <text x="200" y="94" text-anchor="middle" class="tab" style="font-size:16px;fill:#8a4fc4">PAGE ${CK.page+1}</text>
+    ${cells}${lockMsg}
+    ${[0,1].map(p=>`<g class="hot" data-page="${p}" role="button" tabindex="0" aria-pressed="${CK.page===p}" aria-label="Page ${p+1}">
+      <rect x="${60+p*150}" y="420" width="130" height="50" rx="25" fill="${CK.page===p?'#c9a6ef':'#fff'}" ${K}/>
+      <text x="${125+p*150}" y="452" text-anchor="middle" class="tab" style="font-size:18px">PAGE ${p+1}</text>
+      ${p===1&&CK.done<PER_PAGE?padlock(170+p*150,445,.7):''}</g>`).join('')}
+    <text x="200" y="500" text-anchor="middle" class="lbl" style="font-size:15px">${CK.done} OF ${RECIPES.length} RECIPES COOKED</text>`;
+}
+function openRecipe(i){
+  const pageOpen=Math.floor(i/PER_PAGE)===0||CK.done>=PER_PAGE;
+  if(!pageOpen){sfx.meow();say('Page 2 is locked. You need to complete page 1 first!','Cook all the recipes on page 1.');return}
+  if(i>CK.done){sfx.meow();say(`That recipe is locked. Cook recipe ${CK.done+1} first, then this one opens.`,'Tap a recipe with COOK!');return}
+  sfx.tap();CK.r=i;CK.added=[];CK.stirs=0;CK.step='add';
+  const r=RECIPES[i],others=shuffle(Object.keys(ING).filter(k=>!r.i.includes(k))).slice(0,2);
+  CK.shelf=shuffle(r.i.concat(others));
+  kitchenScreen();
+  say(`Let's make ${r.d}! We need ${ING[r.i[0]].n}, ${ING[r.i[1]].n} and ${ING[r.i[2]].n}.`,'Tap them on the shelf to put them in the bowl.');
+}
+const APPL={
+  oven:(on)=>`<rect x="280" y="190" width="96" height="104" rx="8" fill="#e8e8f0" ${K}/><rect x="290" y="216" width="76" height="62" rx="6" fill="${on?'#f9a03f':'#3a3346'}" stroke="${INK}" stroke-width="2.5"/>
+    ${[300,320,340,356].map(x=>`<circle cx="${x}" cy="203" r="4" fill="#fff" stroke="${INK}" stroke-width="1.6"/>`).join('')}<text x="328" y="314" text-anchor="middle" class="tab" style="font-size:14px">OVEN</text>`,
+  pan:(on)=>`<rect x="280" y="246" width="96" height="48" rx="6" fill="#e8e8f0" ${K}/>${on?`<path d="M300,246 q4,-8 0,-14 M316,246 q4,-8 0,-14 M332,246 q4,-8 0,-14" stroke="#f5891f" stroke-width="3" fill="none" stroke-linecap="round"/>`:''}
+    <ellipse cx="318" cy="238" rx="32" ry="9" fill="#3a3346" ${K}/><path d="M350,236 H382" stroke="${INK}" stroke-width="7" stroke-linecap="round"/><text x="328" y="314" text-anchor="middle" class="tab" style="font-size:14px">PAN</text>`,
+  freeze:(on)=>`<rect x="286" y="170" width="84" height="124" rx="8" fill="#d7ecfa" ${K}/><path d="M286,214 H370" stroke="${INK}" stroke-width="2.5"/><path d="M300,186 v18 M300,226 v24" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>
+    ${on?`<path d="${starPath(340,250,10)}" fill="#fff" stroke="#7cc6f0" stroke-width="2"/>`:''}<text x="328" y="314" text-anchor="middle" class="tab" style="font-size:14px">FREEZER</text>`,
+};
+function kitchenScreen(){
+  const r=RECIPES[CK.r],cooking=CK.step==='cooking',ready=CK.step==='ready';
+  const card=r.i.map((k,j)=>{const has=CK.added.includes(k),x=150+j*62;
+    return `<g transform="translate(${x},96) scale(.75)" ${has?'':'opacity=".35"'}>${ING[k].a}</g>${has?`<path d="M${x+10},${108} l5,5 l10,-12" fill="none" stroke="#1f8a4c" stroke-width="3.5" stroke-linecap="round"/>`:''}`}).join('');
+  const shelf=CK.shelf.map((k,j)=>{const x=16+j*74,used=CK.added.includes(k);
+    return `<g class="hot" data-ing="${k}" role="button" tabindex="0" aria-label="${ING[k].n}">
+      <rect x="${x}" y="336" width="68" height="74" rx="9" fill="${used?'#efe7e0':'#fff'}" stroke="${INK}" stroke-width="2"/>
+      <g transform="translate(${x+34},362)" ${used?'opacity=".3"':''}>${ING[k].a}</g>
+      <text x="${x+34}" y="402" text-anchor="middle" class="tab" style="font-size:11px">${ING[k].n.toUpperCase()}</text></g>`}).join('');
+  const bowlFill=CK.added.length?`<ellipse cx="200" cy="250" rx="${32+CK.stirs*2}" ry="7" fill="${['#fbe7c4','#f6d2a8','#e3b26b','#d6ad45'][Math.min(CK.stirs,3)]}"/>`:'';
+  const big=ready
+    ?`<g class="hot pulse" data-go="cookdone" role="button" tabindex="0" aria-label="Yum! Back to the recipe book"><rect x="100" y="430" width="200" height="64" rx="32" fill="#f3a3c6" ${K}/><text x="200" y="470" text-anchor="middle" class="tab" style="font-size:22px">YUM! BACK</text></g>`
+    :`<text x="200" y="466" text-anchor="middle" class="lbl" style="font-size:18px">${CK.step==='add'?'PUT THINGS IN THE BOWL':CK.step==='stir'?`STIR THE BOWL! ${CK.stirs} / 3`:CK.step==='cook'?`NOW TAP THE ${r.how==='freeze'?'FREEZER':r.how.toUpperCase()}`:'COOKING…'}</text>`;
+  stage.innerHTML=DEFS+`${backBtn('cook: '+r.d)}
+    <rect x="130" y="66" width="210" height="58" rx="8" fill="#fff" stroke="#8a4fc4" stroke-width="2.5"/>
+    ${card}
+    <g transform="translate(70,300) scale(.95)" pointer-events="none"><g id="catAnim" class="anim">${catSVG({},CK.step==='ready'?'happy':'normal')}
+      <path d="M-26,-126 Q-30,-150 -12,-148 Q-6,-164 8,-156 Q24,-160 26,-140 Q32,-128 24,-124 H-22Z" fill="#fff" ${K} stroke-width="2.5"/></g></g>
+    ${ready?`<g transform="translate(200,240) scale(2)" class="pop">${DISH[r.d]}</g>`
+      :`<g class="hot" data-go="bowl" role="button" tabindex="0" aria-label="The bowl">
+        <path d="M150,250 H250 Q246,300 200,300 Q154,300 150,250Z" fill="#7cc6f0" ${K}/>${bowlFill}
+        <g id="spoon" style="transform-box:fill-box;transform-origin:50% 100%"><path d="M214,200 L196,254" stroke="#a8652f" stroke-width="6" stroke-linecap="round"/><ellipse cx="214" cy="198" rx="6" ry="9" fill="#a8652f" transform="rotate(20 214 198)"/></g></g>`}
+    ${r.how!=='none'?`<g class="hot" data-go="appliance" role="button" tabindex="0" aria-label="${r.how}">${APPL[r.how](cooking)}</g>`:''}
+    <g id="fx" pointer-events="none"></g>
+    <path d="M10,326 H390" stroke="#8a4fc4" stroke-width="3" stroke-linecap="round"/>
+    ${ready?'':shelf}${big}`;
+}
+function addIng(k){
+  const r=RECIPES[CK.r];
+  if(CK.step!=='add'){say(CK.step==='stir'?'Everything is in! Now stir the bowl.':'The bowl is full.','');return}
+  if(CK.added.includes(k)){say(`The ${ING[k].n} are already in the bowl.`.replace('The flour are','The flour is').replace('The milk are','The milk is').replace('The butter are','The butter is').replace('The sugar are','The sugar is').replace('The rice are','The rice is').replace('The chocolate are','The chocolate is').replace('The cheese are','The cheese is').replace('The bread are','The bread is').replace('The fish are','The fish is'),'');return}
+  if(!r.i.includes(k)){sfx.meow();const el=stage.querySelector(`[data-ing="${k}"]`);el&&restartClass(el,'wiggle',900);
+    say(`Hmm, no ${ING[k].n} in ${r.d}! Look at the recipe card.`,'Tap the things on the card at the top.');return}
+  CK.added.push(k);sfx.plop();
+  if(CK.added.length===r.i.length){CK.step='stir';kitchenScreen();say('Everything is in the bowl! Now stir it.','Tap the bowl three times.');return}
+  kitchenScreen();say(`In go the ${ING[k].n}! Plop!`.replace(/the (flour|milk|butter|sugar|rice|chocolate|cheese|bread|fish)!/,'the $1!'),'What else do we need?');
+}
+function stir(){
+  if(CK.step==='add'){say('The bowl is empty. Put things in it first.','Tap the things on the shelf.');return}
+  if(CK.step!=='stir'){return}
+  CK.stirs++;sfx.swish();kitchenScreen();restartClass($('#spoon'),'wiggle',900);
+  if(CK.stirs<3){say(['Stir, stir!','Round and round!'][CK.stirs-1],'Keep tapping the bowl.');return}
+  const r=RECIPES[CK.r];
+  if(r.how==='none'){finishDish();return}
+  CK.step='cook';kitchenScreen();say(`All mixed! Now it goes in the ${r.how==='freeze'?'freezer':r.how}.`,`Tap the ${r.how==='freeze'?'FREEZER':r.how.toUpperCase()}.`);
+}
+function cookIt(){
+  const r=RECIPES[CK.r];
+  if(CK.step!=='cook'){say(CK.step==='cooking'?'Wait for it…':'Not yet! Mix it in the bowl first.','');return}
+  CK.step='cooking';kitchenScreen();sfx.tap();
+  say(r.how==='oven'?'Into the hot oven. Wait for the ding…':r.how==='pan'?'Sizzle sizzle in the pan…':'Into the cold freezer. Brrr…','');
+  setTimeout(()=>{if(S.screen==='cook'&&CK.step==='cooking'){sfx.ding();finishDish()}},2600);
+}
+function finishDish(){
+  const r=RECIPES[CK.r],first=CK.r===CK.done;
+  CK.step='ready';if(first){CK.done=CK.r+1;saveCook()}
+  kitchenScreen();sfx.tada();hearts(6);restartClass($('#catAnim'),'jump',700);
+  const next=CK.done<RECIPES.length?(CK.done===PER_PAGE&&first?' Page 1 is complete, so page 2 is open!':first?' The next recipe is unlocked!':''):(first?' You cooked every recipe in the book!':'');
+  say(`Ding! The ${r.d} ${/s$/.test(r.d)?'are':'is'} ready. Yum yum!${next}`,'Tap YUM! BACK to go to the recipe book.');
+}
+function cookAct(el){
+  if(el.dataset.recipe!==undefined){openRecipe(+el.dataset.recipe);return true}
+  if(el.dataset.page!==undefined){sfx.tap();CK.page=+el.dataset.page;bookScreen();
+    say(CK.page===1&&CK.done<PER_PAGE?'Page 2 is locked. You need to complete page 1 first!':`Page ${CK.page+1} of the recipe book.`,'Tap a recipe with COOK!');return true}
+  if(el.dataset.ing!==undefined){addIng(el.dataset.ing);return true}
+  const go=el.dataset.go;
+  if(go==='bowl'){stir();return true}
+  if(go==='appliance'){cookIt();return true}
+  if(go==='cookdone'){sfx.tap();CK.page=Math.min(1,Math.floor(Math.min(CK.done,RECIPES.length-1)/PER_PAGE));bookScreen();say('The recipe book.','Tap a recipe with COOK!');return true}
+  if(go==='home'&&CK.step!=='book'){sfx.tap();bookScreen();say('The recipe book.','Tap a recipe with COOK! The arrow goes back to all the games.');return true}
+  return false;
+}
+
 /* ---------- moving between screens ---------- */
 function show(screen){
-  S.screen=screen;
+  S.screen=screen;musicStop();stage.classList.remove('drawing');
   if(screen==='home'){homeScreen();say('Pick a game! These games are by Carolina.','Tap a box to play.')}
+  else if(screen==='craft'){craftScreen();say('Craft with a cat! Here is a big empty piece of paper.','Pick PEN, PAWS or SPLAT, and a colour from the bottom. Then tap the paper.')}
+  else if(screen==='music'){musicScreen();say('Make music with a cat! Play the piano, the drum and the cat guitar.','Tap DJ CATNIP for music, and the dance floor to dance.')}
+  else if(screen==='cook'){CK.page=Math.min(1,Math.floor(Math.min(CK.done,RECIPES.length-1)/PER_PAGE));bookScreen();say('Cook with a cat! Here is the recipe book.','Tap a recipe with COOK! Cook one to open the next.')}
   else if(screen==='help'){S.mood='ache';startHelp()}
   else if(screen==='dress'){S.mood='normal';dressScreen();say('Dress up the cat! What will the cat wear today?','Tap DRESS, SHOES, T-SHIRT or TROUSERS, then pick something from the shelf.')}
 }
@@ -539,6 +918,10 @@ function act(el){
     else{sfx.meow();restartClass(el,'wiggle',900);el.style.transformBox='fill-box';el.style.transformOrigin='center';
       say(`${g.name.join(' ')} is coming soon. Carolina is still making it!`,'Try DRESS UP THE CAT.')}
     return}
+  if(el.dataset.ctool!==undefined){craftAct(el);return}
+  if(el.dataset.colour!==undefined){sfx.tap();C.colour=+el.dataset.colour;if(C.tool==='undo')C.tool='pen';craftScreen();saveCraft();say(COLOUR_NAMES[C.colour]+'!','Now tap the paper.');return}
+  if(S.screen==='music'&&musicAct(el))return;
+  if(S.screen==='cook'&&cookAct(el))return;
   if(el.dataset.tool!==undefined){sfx.tap();const t=el.dataset.tool;H.tool=H.tool===t?null:t;if(H.done)H.tool=null;helpScreen();
     if(H.done)say(`${H.pat.name} is all better now!`,'Tap NEXT PATIENT, or OTHER GAMES.');
     else if(H.tool)say(`The ${TOOL(H.tool).name.toLowerCase()}.`,toolHint());else say('No tool.','Pick a tool from the side.');return}
