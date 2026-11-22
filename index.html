@@ -69,6 +69,8 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(1.4rem,7vw,1.8rem)
 @keyframes tochest{0%{transform:scale(1.3)}100%{transform:translate(var(--tx),var(--ty)) scale(.6);opacity:.4}}
 .flyin{animation:flyin .6s ease-in}
 @keyframes flyin{from{transform:translate(var(--fx),var(--fy))}to{transform:none}}
+.drip{animation:drip .7s ease-in both}
+@keyframes drip{0%{transform:translateY(0);opacity:1}100%{transform:translateY(60px);opacity:0}}
 .pulse{animation:pulse 1.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 @keyframes pulse{50%{transform:scale(1.06)}}
 @media (prefers-reduced-motion:reduce){.jump,.wiggle,.twirl,.pop,.floaty,.jit{animation:jit .5s steps(2)}
@@ -85,6 +87,8 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(1.4rem,7vw,1.8rem)
 @keyframes tochest{0%{transform:scale(1.3)}100%{transform:translate(var(--tx),var(--ty)) scale(.6);opacity:.4}}
 .flyin{animation:flyin .6s ease-in}
 @keyframes flyin{from{transform:translate(var(--fx),var(--fy))}to{transform:none}}
+.drip{animation:drip .7s ease-in both}
+@keyframes drip{0%{transform:translateY(0);opacity:1}100%{transform:translateY(60px);opacity:0}}
 .pulse{animation:none}}
 </style>
 </head>
@@ -251,6 +255,9 @@ const sfx={
   tada(){seq('triangle',[[523,523,.12,.14],[659,659,.12,.14],[784,784,.12,.14],[1047,1047,.35,.16]])},
   paw(){seq('sine',[[500,300,.07,.12]])},
   splat(){noise(.25,600,.35,'lowpass');seq('sine',[[260,90,.18,.18]])},
+  slurp(){seq('sine',[[300,700,.12,.15],[300,700,.12,.15]])},
+  pounce(){seq('sine',[[220,620,.14,.2]])},
+  splash(){noise(.35,1200,.25,'bandpass')},
   squeak(){seq('sine',[[1400,1800,.06,.05]])},
   sweep(){noise(.12,3000,.12,'bandpass')},
   crack(){noise(.18,2500,.3);seq('triangle',[[1300,700,.12,.12]])},
@@ -297,18 +304,23 @@ const GAMES=[
   {id:'heads',name:['LOTS OF','CATS'],ready:true,icon:()=>[[-20,4,'#3cb8e0'],[0,-8,'#8a4fc4'],[20,4,'#d6ad45']].map(([x,y,c])=>`<path transform="translate(${x},${y})" d="M-11,10 L-12,-6 L-10,-14 L-4,-7 L4,-7 L10,-14 L12,-6 L11,10Z" fill="${c}" ${K} stroke-width="2.2"/>`).join('')},
   {id:'paths',name:['BALL','PATHS'],ready:true,icon:()=>`<path d="M-18,-18 V18 M0,-18 V18 M18,-18 V18 M-18,-4 H0 M0,8 H18" stroke="#8a4fc4" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="-18" cy="-22" r="7" fill="#d8243c" stroke="${INK}" stroke-width="2"/><circle cx="18" cy="22" r="7" fill="#ffd34d" stroke="${INK}" stroke-width="2"/>`},
   {id:'wash',name:['WASH AND','CLEAN'],ready:true,icon:()=>[[-14,6,11],[8,-8,9],[14,12,7],[-4,-16,6]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#d7ecfa" ${K} stroke-width="2.2"/><path d="M${x-r*.45},${y-r*.3} q${r*.25},${-r*.3} ${r*.5},${-r*.3}" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>`).join('')},
+  {id:'garden',name:['GARDEN','WITH A CAT'],ready:true,fresh:true,icon:()=>`<path d="M0,22 V0" stroke="#1f8a4c" stroke-width="3.5"/><ellipse cx="-8" cy="10" rx="7" ry="3.5" fill="#7fc36b" stroke="${INK}" stroke-width="1.4" transform="rotate(-25 -8 10)"/><g transform="translate(0,-6) scale(1.4)">${FLOWERS.sunflower.a('#ffd34d')}</g>`},
+  {id:'cafe',name:['CAT','CAFÉ'],ready:true,fresh:true,icon:()=>`<g transform="scale(1.4)">${MENU.milk.a}</g><g transform="translate(20,8)">${MENU.fishcake.a}</g>`},
+  {id:'hide',name:['HIDE AND','SEEK'],ready:true,fresh:true,icon:()=>`<rect x="-22" y="-2" width="44" height="26" fill="#d9a066" ${K}/><path d="M-12,-2 L-9,-14 L-2,-4Z M2,-4 L10,-16 L12,-2Z" fill="#a8652f" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><text x="0" y="17" text-anchor="middle" class="tab" style="font-size:14px">?</text>`},
+  {id:'house',name:['BUILD A','CAT HOUSE'],ready:true,fresh:true,icon:()=>`<g transform="translate(-8,24) scale(.5)">${PIECES.box.a(70,50)}</g><g transform="translate(16,24) scale(.5)">${PIECES.post.a(26,90)}</g><g transform="translate(-8,-1) scale(.5)">${PIECES.cushion.a(80,20)}</g>`},
+  {id:'dance',name:['CAT DANCE','PARTY'],ready:true,fresh:true,icon:()=>[[-14,8,'#e0508a'],[14,8,'#ffd34d'],[0,-12,'#3cb8b0']].map(([x,y,c])=>`<g transform="translate(${x},${y}) scale(1.05)" fill="${c}" stroke="${INK}" stroke-width="1.3">${PAW}</g>`).join('')},
+  {id:'kitten',name:['ADOPT A','KITTEN'],ready:true,fresh:true,icon:()=>`<g transform="translate(0,26) scale(.32)">${catSVG({bow:1},'happy',FURS[2])}</g>${heart(18,-14,.9,'#e0508a')}`},
 ];
 function homeScreen(){
-  // three by three, like the boxes on Carolina's poster
+  // three across, like the boxes on Carolina's poster
+  const rows=Math.ceil(GAMES.length/3),th=Math.floor((452-(rows-1)*6)/rows);
   const tiles=GAMES.map((g,i)=>{
-    const c=i%3,r=Math.floor(i/3),x=14+c*126,y=62+r*150,w=120,h=142;
-    return `<g class="hot" data-game="${g.id}" role="button" tabindex="0" aria-label="${g.name.join(' ')}${g.ready?'':' (coming soon)'}">
-      <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="12" fill="${g.ready?'#fff':'#fbf3ee'}" stroke="${g.ready?'#e0508a':'#f3a3c6'}" stroke-width="3"/>
-      <g transform="translate(${x+60},${y+46})" ${g.ready?'':'opacity=".55"'}>${g.icon()}</g>
-      <text x="${x+60}" y="${y+96}" text-anchor="middle" class="lbl" style="font-size:15px${g.ready?'':';fill:#7a9cc4'}">${g.name[0]}</text>
-      <text x="${x+60}" y="${y+114}" text-anchor="middle" class="lbl" style="font-size:15px${g.ready?'':';fill:#7a9cc4'}">${g.name[1]}</text>
-      ${g.ready?`<rect x="${x+36}" y="${y+120}" width="48" height="16" rx="8" fill="#e0508a"/><text x="${x+60}" y="${y+132}" text-anchor="middle" class="soon" style="font-size:11px">PLAY!</text>`
-        :`<rect x="${x+38}" y="${y+120}" width="44" height="16" rx="8" fill="#9fb9d6"/><text x="${x+60}" y="${y+132}" text-anchor="middle" class="soon" style="font-size:11px">SOON</text>`}
+    const c=i%3,r=Math.floor(i/3),x=14+c*126,y=60+r*(th+6),w=120,h=th;
+    return `<g class="hot" data-game="${g.id}" role="button" tabindex="0" aria-label="${g.name.join(' ')}">
+      <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="12" fill="#fff" stroke="${g.fresh?'#8a4fc4':'#e0508a'}" stroke-width="3"/>
+      <g transform="translate(${x+30},${y+h/2+2}) scale(.72)">${g.icon()}</g>
+      ${g.name.map((t,k)=>`<text x="${x+84}" y="${y+h/2-2+k*16}" text-anchor="middle" class="lbl" style="font-size:12.5px" ${t.length>8?'textLength="62" lengthAdjust="spacingAndGlyphs"':''}>${t}</text>`).join('')}
+      ${g.fresh?`<g transform="translate(${x+w-14},${y+10}) rotate(12)"><path d="${starPath(0,0,15)}" fill="#ffd34d" stroke="${INK}" stroke-width="1.6"/><text y="3.5" text-anchor="middle" class="soon" style="font-size:8px;fill:${INK}">NEW</text></g>`:''}
     </g>`}).join('');
   stage.innerHTML=DEFS+`<text x="200" y="44" text-anchor="middle" class="ttl" style="font-size:27px">I want mini games about cats!</text>`+tiles;
 }
@@ -882,7 +894,7 @@ function kitchenScreen(){
     ${card}
     <g transform="translate(70,300) scale(.95)" pointer-events="none"><g id="catAnim" class="anim">${catSVG({},CK.step==='ready'?'happy':'normal')}
       <path d="M-26,-126 Q-30,-150 -12,-148 Q-6,-164 8,-156 Q24,-160 26,-140 Q32,-128 24,-124 H-22Z" fill="#fff" ${K} stroke-width="2.5"/></g></g>
-    ${ready?`<g transform="translate(200,240) scale(2)" class="pop">${DISH[r.d]}</g>`
+    ${ready?`<g transform="translate(200,240) scale(2)"><g class="pop">${DISH[r.d]}</g></g>`
       :`<g class="hot" data-go="bowl" role="button" tabindex="0" aria-label="The bowl">
         <path d="M150,250 H250 Q246,300 200,300 Q154,300 150,250Z" fill="#7cc6f0" ${K}/>${bowlFill}
         <g id="spoon" style="transform-box:fill-box;transform-origin:50% 100%"><path d="M214,200 L196,254" stroke="#a8652f" stroke-width="6" stroke-linecap="round"/><ellipse cx="214" cy="198" rx="6" ry="9" fill="#a8652f" transform="rotate(20 214 198)"/></g></g>`}
@@ -1361,7 +1373,7 @@ function newMess(){
   junk.forEach((k,i)=>W.items.push({k,x:90+i*110+Math.random()*30,y:360+Math.random()*70,j:1}));
   W.dirt=[];
   for(let i=0;i<4;i++)W.dirt.push({t:'mud',x:40+Math.random()*320,y:120+Math.random()*320,r:16+Math.random()*10,v:1,s:Math.random()*360});
-  for(let i=0;i<3;i++)W.dirt.push({t:'dust',x:40+Math.random()*320,y:FLOOR_Y+30+Math.random()*110,r:18,v:1,s:0});
+  for(let i=0;i<3;i++)W.dirt.push({t:'dust',x:40+Math.random()*320,y:FLOOR_Y+30+Math.random()*80,r:18,v:1,s:0});
   W.dirt.push({t:'web',x:28,y:72,r:30,v:1,s:0},{t:'web',x:372,y:72,r:30,v:1,s:90});
   W.clean=false;W.erased=0;W.tool='sponge';
 }
@@ -1378,7 +1390,7 @@ const dirtLeft=()=>W.dirt.filter(d=>d.v>0).length+W.items.filter(it=>it.j).lengt
 function washScreen(){
   const left=dirtLeft(),total=W.dirt.length+3,pct=Math.round(100*(1-left/Math.max(total,1)));
   const item=(it,i)=>{const def=it.j?JUNK[it.k]:FURN[it.k];
-    return `<g class="hot" data-witem="${i}" role="button" tabindex="0" aria-label="${def.n}" transform="translate(${it.x.toFixed(1)},${it.y.toFixed(1)})">${def.a}</g>`};
+    return `<g class="hot" data-witem="${i}" role="button" tabindex="0" aria-label="${def.n}" transform="translate(${it.x.toFixed(1)},${it.y.toFixed(1)})">${it.j?'<circle r="22" fill="transparent"/>':''}${def.a}</g>`};
   const tools=WTOOLS.map((t,i)=>{const x=16+i*76,on=W.tool===t.id;
     return `<g class="hot" data-wtool="${t.id}" role="button" tabindex="0" aria-pressed="${on}" aria-label="${t.name}">
       <rect x="${x}" y="468" width="70" height="46" rx="9" fill="${on?'#f3a3c6':'#fff'}" stroke="${INK}" stroke-width="${on?3:2}"/>
@@ -1459,9 +1471,454 @@ function washAct(el){
 }
 function startWash(){newMess();washScreen();say('Wash and clean! The cat\'s room is a big mess.','Use the SPONGE on mud, the BROOM on dust and cobwebs, and MOVE the rubbish into the bin.')}
 
+/* ---------- the six surprise games share these ---------- */
+const XG={}; // extra games: {start, act(el) -> handled?, stop}
+let XT=[]; // timers of the current game, cleared when you leave it
+function xEvery(fn,ms){const id=setInterval(fn,ms);XT.push(()=>clearInterval(id));return id}
+function xLater(fn,ms){const id=setTimeout(fn,ms);XT.push(()=>clearTimeout(id));return id}
+function xStopAll(){XT.forEach(f=>f());XT=[];for(const k in XG)XG[k].stop&&XG[k].stop()}
+const btn=(go,x,y,w,h,label,fill='#fff',fs=15,attr='data-xgo')=>`<g class="hot" ${attr}="${go}" role="button" tabindex="0" aria-label="${label}">
+  <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${Math.min(h/2,16)}" fill="${fill}" ${K}/><text x="${x+w/2}" y="${y+h/2+fs*.36}" text-anchor="middle" class="tab" style="font-size:${fs}px">${label}</text></g>`;
+function loadJSON(k,d){try{const v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch(e){return d}}
+function saveJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+
+/* ---------- Garden with a cat ----------
+   Five patches of soil. Plant a seed, water it until it grows into a flower (or catnip!), then pick it for the bouquet. */
+const FLOWERS={
+  rose:{n:'rose',c:'#d8243c',a:c=>`<g>${[0,72,144,216,288].map(r=>`<ellipse cx="0" cy="-6" rx="6" ry="8" fill="${c}" stroke="${INK}" stroke-width="1.4" transform="rotate(${r})"/>`).join('')}<circle r="5" fill="#a01c2e" stroke="${INK}" stroke-width="1.2"/></g>`},
+  sunflower:{n:'sunflower',c:'#ffd34d',a:c=>`<g>${Array.from({length:10},(_,i)=>`<ellipse cx="0" cy="-10" rx="3.6" ry="7" fill="${c}" stroke="${INK}" stroke-width="1.2" transform="rotate(${i*36})"/>`).join('')}<circle r="7" fill="#6b3b1f" stroke="${INK}" stroke-width="1.4"/></g>`},
+  tulip:{n:'tulip',c:'#e0508a',a:c=>`<path d="M-9,-8 L-9,4 Q0,12 9,4 L9,-8 L4,-2 L0,-10 L-4,-2Z" fill="${c}" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round"/>`},
+  bluebell:{n:'bluebell',c:'#2c8fd6',a:c=>`<g>${[[-6,-4],[6,-1],[0,6]].map(([x,y])=>`<path d="M${x-5},${y-4} Q${x},${y-10} ${x+5},${y-4} L${x+6},${y+3} L${x+3},${y+1} L${x},${y+4} L${x-3},${y+1} L${x-6},${y+3}Z" fill="${c}" stroke="${INK}" stroke-width="1.3" stroke-linejoin="round"/>`).join('')}</g>`},
+  catnip:{n:'catnip',c:'#7fc36b',a:()=>`<g>${[[-7,-2,-30],[7,-2,30],[0,-8,0],[-4,6,-60],[4,6,60]].map(([x,y,r])=>`<ellipse cx="${x}" cy="${y}" rx="4" ry="7" fill="#7fc36b" stroke="${INK}" stroke-width="1.3" transform="rotate(${r} ${x} ${y})"/>`).join('')}<circle cy="-14" r="3" fill="#c9a6ef" stroke="${INK}" stroke-width="1.1"/></g>`},
+};
+const GKEYS=Object.keys(FLOWERS);
+const GD=loadJSON('catGarden',{plots:[null,null,null,null,null],vase:[],bouquets:0});
+const GPX=[48,124,200,276,352],GPY=380;
+const GR={seed:'rose',tool:'seed'};
+function gardenPlant(p,x){
+  if(!p)return '';const f=FLOWERS[p.k],g=p.g;
+  const stem=[0,14,34,58,70][g];
+  let o=g>0?`<path d="M${x},${GPY-4} V${GPY-4-stem}" stroke="#1f8a4c" stroke-width="4" stroke-linecap="round"/>`:'';
+  if(g>=2)o+=`<ellipse cx="${x-9}" cy="${GPY-14-stem*.3}" rx="8" ry="4" fill="#7fc36b" stroke="${INK}" stroke-width="1.4" transform="rotate(-25 ${x-9} ${GPY-14-stem*.3})"/><ellipse cx="${x+9}" cy="${GPY-20-stem*.4}" rx="8" ry="4" fill="#7fc36b" stroke="${INK}" stroke-width="1.4" transform="rotate(25 ${x+9} ${GPY-20-stem*.4})"/>`;
+  if(g===0)o+=`<ellipse cx="${x}" cy="${GPY-4}" rx="4" ry="3" fill="#8a5a2b" stroke="${INK}" stroke-width="1.2"/>`;
+  if(g===1)o+=`<path d="M${x},${GPY-18} q-8,-6 -10,0 q6,4 10,0 q8,-6 10,0 q-6,4 -10,0" fill="#7fc36b" stroke="${INK}" stroke-width="1.2"/>`;
+  if(g===3)o+=`<ellipse cx="${x}" cy="${GPY-4-stem}" rx="6" ry="9" fill="${f.c}" stroke="${INK}" stroke-width="1.6"/>`;
+  if(g===4)o+=`<g transform="translate(${x},${GPY-6-stem}) scale(1.5)"><g class="pop">${f.a(f.c)}</g></g>`;
+  if(p.thirsty&&g<4)o+=`<g transform="translate(${x+20},${GPY-40})"><path d="M0,-8 C0,-8 -6,0 -6,3 a6,6 0 0 0 12,0 C6,0 0,-8 0,-8Z" fill="#7cc6f0" stroke="${INK}" stroke-width="1.5"/></g>`;
+  return o;
+}
+function gardenScreen(){
+  const tools=GKEYS.map((k,i)=>{const on=GR.tool==='seed'&&GR.seed===k,x=10+i*54;
+    return `<g class="hot" data-seed="${k}" role="button" tabindex="0" aria-pressed="${on}" aria-label="${FLOWERS[k].n} seeds">
+      <rect x="${x}" y="440" width="50" height="70" rx="6" fill="${on?'#f3a3c6':'#fffaf6'}" stroke="${INK}" stroke-width="${on?3:2}"/>
+      <rect x="${x+6}" y="446" width="38" height="40" rx="3" fill="#fff" stroke="${INK}" stroke-width="1.4"/>
+      <g transform="translate(${x+25},466) scale(.95)">${FLOWERS[k].a(FLOWERS[k].c)}</g>
+      <text x="${x+25}" y="502" text-anchor="middle" class="tab" style="font-size:${k.length>7?9:11}px">${k.toUpperCase()}</text></g>`}).join('');
+  const tool=(id,x,label,icon)=>{const on=GR.tool===id;return `<g class="hot" data-gtool="${id}" role="button" tabindex="0" aria-pressed="${on}" aria-label="${label}">
+      <rect x="${x}" y="440" width="58" height="70" rx="8" fill="${on?'#f3a3c6':'#fff'}" stroke="${INK}" stroke-width="${on?3:2}"/>
+      <g transform="translate(${x+29},468)">${icon}</g><text x="${x+29}" y="502" text-anchor="middle" class="tab" style="font-size:11px">${label}</text></g>`};
+  const vase=GD.vase.map((k,i)=>{const a=-50+i*(100/Math.max(GD.vase.length-1,1)),r=a*Math.PI/180;
+    return `<path d="M338,112 L${(338+Math.sin(r)*30).toFixed(1)},${(112-Math.cos(r)*34).toFixed(1)}" stroke="#1f8a4c" stroke-width="2.5"/><g transform="translate(${(338+Math.sin(r)*30).toFixed(1)},${(112-Math.cos(r)*34).toFixed(1)}) scale(.75)">${FLOWERS[k].a(FLOWERS[k].c)}</g>`}).join('');
+  stage.innerHTML=DEFS+`<rect x="2" y="2" width="396" height="${GPY+8}" rx="12" fill="#d7ecfa"/>
+    <circle cx="200" cy="96" r="22" fill="#ffd34d" ${K}/>${[0,45,90,135,180,225,270,315].map(a=>`<path d="M${200+Math.cos(a*Math.PI/180)*30},${96+Math.sin(a*Math.PI/180)*30} L${200+Math.cos(a*Math.PI/180)*40},${96+Math.sin(a*Math.PI/180)*40}" stroke="#f5891f" stroke-width="3" stroke-linecap="round"/>`).join('')}
+    ${[30,72,114,156,198,240,282,324,366].map(x=>`<path d="M${x-14},${GPY-6} V250 L${x},236 L${x+14},250 V${GPY-6}Z" fill="#fff6ea" stroke="#d6c3a8" stroke-width="2"/>`).join('')}
+    <rect x="2" y="${GPY-8}" width="396" height="56" fill="#8a5a2b"/>
+    ${GPX.map(x=>`<ellipse cx="${x}" cy="${GPY}" rx="30" ry="10" fill="#6b3b1f" stroke="${INK}" stroke-width="2"/>`).join('')}
+    ${backBtn('garden with a cat')}
+    <g class="hot" data-xgo="vase" role="button" tabindex="0" aria-label="The bouquet: ${GD.vase.length} flowers">${vase}<path d="M322,110 H354 L350,150 Q338,158 326,150Z" fill="#7cc6f0" ${K}/>
+      <text x="338" y="170" text-anchor="middle" class="tab" style="font-size:11px">BOUQUET ${GD.vase.length}/5</text></g>
+    ${GD.plots.map((p,i)=>`<g class="hot" data-plot="${i}" role="button" tabindex="0" aria-label="Garden patch ${i+1}${p?', '+FLOWERS[p.k].n+(p.g>=4?' in flower':' growing'):', empty'}">
+      <rect x="${GPX[i]-36}" y="${GPY-110}" width="72" height="130" fill="transparent"/>${gardenPlant(p,GPX[i])}</g>`).join('')}
+    <g transform="translate(64,${GPY+48}) scale(.42)" pointer-events="none"><g id="catAnim" class="anim">${catSVG(S.wear,'happy')}</g></g>
+    <g id="fx" pointer-events="none"></g>
+    ${tools}
+    ${tool('water',282,'WATER',`<path d="M-12,-4 H8 V14 H-12Z" fill="#7cc6f0" ${K} stroke-width="2"/><path d="M8,0 L20,-10" stroke="${INK}" stroke-width="4" stroke-linecap="round"/><path d="M-12,0 Q-22,4 -12,10" fill="none" stroke="${INK}" stroke-width="2.4"/>`)}
+    ${tool('pick',342,'PICK',`<path d="M-14,-2 H14 L10,14 H-10Z" fill="#e3b26b" ${K} stroke-width="2"/><path d="M-12,-2 Q0,-20 12,-2" fill="none" stroke="${INK}" stroke-width="2.4"/>`)}`;
+}
+function gardenTap(i){
+  const p=GD.plots[i],x=GPX[i];
+  if(GR.tool==='seed'){
+    if(p){say(p.g>=4?`This ${FLOWERS[p.k].n} is ready to pick!`:'Something is already growing here. Give it some water!',p.g>=4?'Tap PICK, then the flower.':'Tap WATER, then the plant.');return}
+    GD.plots[i]={k:GR.seed,g:0,thirsty:true};sfx.plop();
+    say(`You planted ${GR.seed==='catnip'?'catnip':'a '+FLOWERS[GR.seed].n} seed. Now give it some water!`,'Tap WATER, then the seed.')}
+  else if(GR.tool==='water'){
+    if(!p){say('Nothing is planted here yet.','Pick some seeds at the bottom, then tap the soil.');return}
+    if(p.g>=4){say('This one is all grown up!','Tap PICK to put it in the bouquet.');return}
+    p.g++;p.thirsty=p.g<4;sfx.splash();
+    const fx=$('#fx');fx&&(fx.innerHTML=[0,1,2,3].map(k=>`<g transform="translate(${x-8+k*6},${GPY-90})"><g class="drip" style="animation-delay:${k*.08}s"><path d="M0,-5 C0,-5 -3,0 -3,2 a3,3 0 0 0 6,0 C3,0 0,-5 0,-5Z" fill="#7cc6f0"/></g></g>`).join(''));
+    say(['','A little sprout!','It is getting taller!','A bud! Nearly there…',p.k==='catnip'?'Catnip! The cat loves catnip!':`A beautiful ${FLOWERS[p.k].n}!`][p.g],p.g>=4?'Tap PICK, then the flower, for the bouquet.':'Water it again!')}
+  else if(GR.tool==='pick'){
+    if(!p||p.g<4){say(p?'It is not ready yet. Keep watering!':'Nothing to pick here.','');return}
+    GD.plots[i]=null;sfx.pop();
+    if(p.k==='catnip'){saveJSON('catGarden',GD);gardenScreen();const a=$('#catAnim');a&&restartClass(a,'twirl',1200);sfx.meow();
+      say('The cat smells the catnip and goes silly! Wheee! Roll, roll, roll!','Catnip is for the cat, not the bouquet.');return}
+    GD.vase.push(p.k);
+    if(GD.vase.length>=5){GD.bouquets++;saveJSON('catGarden',GD);gardenScreen();sfx.tada();hearts(8);
+      say(`What a beautiful bouquet! That is bouquet number ${GD.bouquets}. The cat gives it to someone it loves.`,'Plant more seeds for a new bouquet!');
+      xLater(()=>{GD.vase=[];saveJSON('catGarden',GD);if(S.screen==='garden')gardenScreen()},2600);return}
+    say(`The ${FLOWERS[p.k].n} goes in the bouquet. ${5-GD.vase.length} more!`,'Plant more seeds and grow them.')}
+  saveJSON('catGarden',GD);gardenScreen();
+}
+XG.garden={start(){gardenScreen();say('Garden with a cat! Plant seeds, water them and watch them grow.','Pick seeds at the bottom, then tap the soil.')},
+  act(el){
+    if(el.dataset.seed!==undefined){sfx.tap();GR.tool='seed';GR.seed=el.dataset.seed;gardenScreen();say(`${FLOWERS[GR.seed].n} seeds.`,'Tap the soil to plant them.');return true}
+    if(el.dataset.gtool!==undefined){sfx.tap();GR.tool=el.dataset.gtool;gardenScreen();say(GR.tool==='water'?'The watering can!':'The basket, for picking flowers.',GR.tool==='water'?'Tap a plant to water it.':'Tap a flower to pick it.');return true}
+    if(el.dataset.plot!==undefined){gardenTap(+el.dataset.plot);return true}
+    if(el.dataset.xgo==='vase'){say(GD.vase.length?`The bouquet has ${GD.vase.length} flowers.`:'The vase is empty. Grow some flowers!',`You have made ${GD.bouquets} bouquets.`);return true}
+    return false}};
+
+/* ---------- Cat café ----------
+   Customers sit at the counter and ask for milk, a fish cake or a cupcake. Tap the food to serve it before they get grumpy.
+   Happy customers pay coins, and the coins go into the same treasure chest as Lots of cats. */
+const MENU={
+  milk:{n:'milk',a:`<path d="M-10,-12 H10 L8,14 H-8Z" fill="#fff" ${K} stroke-width="2.2"/><path d="M-9,-4 H9" stroke="#d7ecfa" stroke-width="5"/>${heart(0,4,.5,'#f38db5')}`},
+  fishcake:{n:'fish cake',a:`<ellipse cx="0" cy="6" rx="16" ry="5" fill="#fff" ${K} stroke-width="2"/><ellipse cx="0" cy="0" rx="12" ry="7" fill="#e3b26b" ${K} stroke-width="2"/><path d="M-6,-1 q5,-5 10,0 q-5,5 -10,0Z M4,-1 l4,-3 v6Z" fill="#f9a03f" stroke="${INK}" stroke-width="1.2"/>`},
+  cupcake:{n:'cupcake',a:DISH.cupcakes.replace('<path d="M-16,0','<g transform="scale(.75)"><path d="M-16,0')+'</g>'},
+  fishbone:{n:'fish biscuit',a:`<path d="M-14,0 q14,-12 26,0 q-12,12 -26,0Z M10,0 l7,-6 v12Z" fill="#d6ad45" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><circle cx="-7" cy="-1" r="1.6" fill="${INK}"/>`},
+};
+const MKEYS=Object.keys(MENU);
+const CUST_COLS=[{head:'#8d8d9a',body:'#d3d4dc',ear:'#f3a3c6'},{head:'#f5891f',body:'#ffd34d',ear:'#f3a3c6'},{head:'#3a3346',body:'#fff',ear:'#f3a3c6'},{head:'#7cc6f0',body:'#c9a6ef',ear:'#fff'},{head:'#f6b3cb',body:'#fff',ear:'#e0508a'},{head:'#a8652f',body:'#7fc36b',ear:'#ffd34d'}];
+const SEATX=[80,200,320];
+const CF={seats:[null,null,null],served:0,grumpy:0,day:1,coinsToday:0,left:8,over:false};
+function cafeScreen(){
+  const seat=(c,i)=>{const x=SEATX[i];if(!c)return `<g><rect x="${x-26}" y="292" width="52" height="14" rx="5" fill="#a8652f" stroke="${INK}" stroke-width="2"/></g>`;
+    const pat=Math.max(0,c.p),col=pat>.5?'#7fc36b':pat>.25?'#ffd34d':'#d8243c',mood=c.mood||(pat>.35?'normal':'ache');
+    return `<g class="hot" data-cust="${i}" role="button" tabindex="0" aria-label="Customer wants ${MENU[c.want].n}">
+      <g transform="translate(${x},292) scale(.62)"><g class="anim ${c.enter?'pop':''}">${catSVG(c.w||{},mood,c.p0)}</g></g>
+      <rect x="${x-26}" y="292" width="52" height="14" rx="5" fill="#a8652f" stroke="${INK}" stroke-width="2"/>
+      ${c.mood?'':`<g><path d="M${x-30},138 H${x+30} Q${x+36},138 ${x+36},144 V180 Q${x+36},186 ${x+30},186 H${x+8} L${x},196 L${x-8},186 H${x-30} Q${x-36},186 ${x-36},180 V144 Q${x-36},138 ${x-30},138Z" fill="#fff" stroke="${INK}" stroke-width="2"/>
+        <g transform="translate(${x},162)">${MENU[c.want].a}</g></g>
+      <rect x="${x-30}" y="122" width="60" height="9" rx="4.5" fill="#efe7e0" stroke="${INK}" stroke-width="1.5"/><rect x="${x-29}" y="123" width="${(58*pat).toFixed(1)}" height="7" rx="3.5" fill="${col}"/>`}
+      ${c.mood==='happy'?`<text x="${x}" y="170" text-anchor="middle" class="ttl" style="font-size:22px">Yum!</text>`:c.mood==='ache'?`<text x="${x}" y="170" text-anchor="middle" class="ttl" style="font-size:22px;fill:#8d8d9a">Hmph!</text>`:''}</g>`};
+  stage.innerHTML=DEFS+`<rect x="2" y="2" width="396" height="330" rx="12" fill="#fde3ee"/>
+    ${[0,1,2,3,4,5,6,7].map(i=>`<path d="M${i*52},60 L${i*52+26},86 L${i*52+52},60Z" fill="${['#e0508a','#ffd34d','#7cc6f0','#7fc36b'][i%4]}" stroke="${INK}" stroke-width="1.5"/>`).join('')}
+    <path d="M0,60 H400" stroke="${INK}" stroke-width="2"/>
+    ${backBtn('cat café')}
+    <g class="hot" data-xgo="chest" role="button" tabindex="0" aria-label="Treasure chest: ${G.coins} coins"><rect x="320" y="18" width="62" height="32" rx="5" fill="#a8652f" ${K} stroke-width="2.5"/><path d="M320,28 Q351,6 382,28" fill="#c8853b" ${K} stroke-width="2.5"/><text x="351" y="44" text-anchor="middle" class="tab" style="font-size:14px;fill:#fff" id="coinCount">${G.coins}</text></g>
+    <text x="200" y="106" text-anchor="middle" class="tab" style="font-size:14px;fill:var(--pen)">DAY ${CF.day} · ${CF.left} CUSTOMERS TO GO</text>
+    ${CF.seats.map(seat).join('')}
+    <rect x="2" y="306" width="396" height="30" fill="#c8853b" stroke="${INK}" stroke-width="2.5"/>
+    <g transform="translate(200,404) scale(.55)" pointer-events="none"><g id="catAnim" class="anim">${catSVG({hat:'tophat',top:'stripes'},'happy')}</g></g>
+    <g id="fx" pointer-events="none"></g>
+    ${MKEYS.map((k,i)=>{const x=i<2?12+i*86:226+(i-2)*86;return `<g class="hot" data-food="${k}" role="button" tabindex="0" aria-label="${MENU[k].n}">
+      <rect x="${x}" y="420" width="80" height="88" rx="10" fill="#fff" stroke="${INK}" stroke-width="2"/><g transform="translate(${x+40},456) scale(1.3)">${MENU[k].a}</g>
+      <text x="${x+40}" y="500" text-anchor="middle" class="tab" style="font-size:11px">${MENU[k].n.toUpperCase()}</text></g>`}).join('')}
+    ${CF.over?`<g><rect x="40" y="140" width="320" height="200" rx="18" fill="#fffaf6" stroke="#e0508a" stroke-width="4"/>
+      <text x="200" y="190" text-anchor="middle" class="ttl">The café is closed!</text>
+      <text x="200" y="226" text-anchor="middle" class="tab" style="font-size:17px">${CF.served} HAPPY CUSTOMERS</text>
+      <text x="200" y="252" text-anchor="middle" class="tab" style="font-size:17px">+${CF.coinsToday} COINS IN THE CHEST</text>
+      ${btn('nextday',110,272,180,50,'NEXT DAY','#f3a3c6',19)}</g>`:''}`;
+}
+function cafeTick(){
+  if(CF.over)return;let changed=false;
+  CF.seats.forEach((c,i)=>{if(!c||c.mood)return;c.p-=c.rate;c.enter=false;
+    if(c.p<=0){c.mood='ache';CF.grumpy++;sfx.meow();say('Oh no, that customer got grumpy and left!','Serve them faster next time.');xLater(()=>{CF.seats[i]=null;endCheck();if(S.screen==='cafe')cafeScreen()},1400)}
+    changed=true});
+  // a new customer sits down on an empty seat
+  const free=CF.seats.map((c,i)=>c?-1:i).filter(i=>i>=0),waiting=CF.left-CF.seats.filter(Boolean).length;
+  if(free.length&&CF.left>CF.seats.filter(Boolean).length&&Math.random()<.35){const i=pick(free);
+    const speed=Math.min(.012+CF.day*.002,.03);
+    CF.seats[i]={want:pick(MKEYS),p:1,rate:speed,p0:pick(CUST_COLS),enter:true,w:Math.random()<.4?{hat:pick(['bow','crown','sunhat','tophat'])}:{}};sfx.ding();changed=true}
+  if(changed&&S.screen==='cafe')cafeScreen();
+}
+function endCheck(){if(CF.left<=0&&!CF.seats.some(Boolean)&&!CF.over){CF.over=true;sfx.tada();hearts(6);
+  say(`The café is closed for today. ${CF.served} happy customers paid ${CF.coinsToday} coins!`,'Tap NEXT DAY to open again.')}}
+function serve(k){
+  if(CF.over)return;
+  // the customer who has waited longest for this food gets it
+  const idx=CF.seats.map((c,i)=>c&&!c.mood&&c.want===k?i:-1).filter(i=>i>=0).sort((a,b)=>CF.seats[a].p-CF.seats[b].p)[0];
+  if(idx===undefined){sfx.meow();say(`Nobody wants ${MENU[k].n === 'milk'?'milk':'a '+MENU[k].n} right now.`,'Look at the bubbles to see what they want.');return}
+  const c=CF.seats[idx],coins=c.p>.5?3:2;c.mood='happy';CF.served++;CF.left--;CF.coinsToday+=coins;G.coins+=coins;saveMatch();
+  sfx.coin();cafeScreen();const a=$('#catAnim');a&&restartClass(a,'jump',700);
+  say(pick(['Yum yum! Thank you!','Delicious! Meow!','Purr-fect!']),`+${coins} coins for the treasure chest.`);
+  xLater(()=>{CF.seats[idx]=null;endCheck();if(S.screen==='cafe')cafeScreen()},1100);
+}
+function cafeStart(){CF.seats=[null,null,null];CF.served=0;CF.grumpy=0;CF.coinsToday=0;CF.left=6+CF.day*2;CF.over=false;
+  cafeScreen();xEvery(cafeTick,400)}
+XG.cafe={start(){CF.day=loadJSON('catCafe',{day:1}).day||1;cafeStart();say('Welcome to the cat café! Customers will tell you what they want.','Tap the food they ask for, before they get grumpy.')},
+  act(el){
+    if(el.dataset.food!==undefined){serve(el.dataset.food);return true}
+    if(el.dataset.cust!==undefined){const c=CF.seats[+el.dataset.cust];c&&!c.mood&&say(`This customer would like ${c.want==='milk'?'some milk':'a '+MENU[c.want].n}, please.`,'Tap it at the bottom.');return true}
+    if(el.dataset.xgo==='chest'){sfx.coin();say(`The treasure chest has ${G.coins} coins inside.`,'');return true}
+    if(el.dataset.xgo==='nextday'){XT.forEach(f=>f());XT=[];CF.day++;saveJSON('catCafe',{day:CF.day});cafeStart();say(`Day ${CF.day}! More customers today.`,'');return true}
+    return false}};
+
+/* ---------- Hide and seek ----------
+   The cat hides somewhere in a busy room. Tap where you think it is. Each round it hides a little better. */
+const SPOTS=[
+  {id:'sofa',n:'behind the sofa',x:110,y:300,hx:150,hy:264,draw:()=>`<rect x="40" y="262" width="150" height="44" rx="12" fill="#3cb8b0" ${K}/><rect x="30" y="282" width="26" height="46" rx="9" fill="#3cb8b0" ${K}/><rect x="174" y="282" width="26" height="46" rx="9" fill="#3cb8b0" ${K}/><rect x="52" y="296" width="126" height="28" rx="6" fill="#7fd6ce" ${K}/>`,
+    funny:'Just a lost sock behind the sofa!'},
+  {id:'plant',n:'in the plant',x:362,y:220,hx:362,hy:182,draw:()=>`<path d="M346,250 L350,280 H374 L378,250Z" fill="#c8853b" ${K}/><path d="M362,250 Q330,220 338,190 Q352,210 362,250 Q368,200 386,186 Q392,222 362,250Z" fill="#1f8a4c" ${K} stroke-width="2.4"/>`,
+    funny:'Only leaves in the plant!'},
+  {id:'box',n:'in the box',x:290,y:350,hx:290,hy:318,draw:()=>`<rect x="258" y="320" width="64" height="48" fill="#d9a066" ${K}/><path d="M258,320 L246,306 M322,320 L334,306" ${K}/><rect x="286" y="320" width="8" height="48" fill="#f1e05a" opacity=".85"/>`,
+    funny:'The box is empty. Boxes are a cat favourite though!'},
+  {id:'curtain',n:'behind the curtain',x:58,y:170,hx:96,hy:236,draw:()=>`<path d="M30,76 H86 V236 Q72,226 58,236 Q44,226 30,236Z" fill="#e0508a" ${K}/><path d="M44,80 V226 M58,80 V230 M72,80 V226" stroke="#b83a6e" stroke-width="2"/>`,
+    funny:'Nobody behind the curtain. Just dust!'},
+  {id:'basket',n:'in the laundry basket',x:204,y:362,hx:204,hy:336,draw:()=>`<path d="M176,338 L182,386 H226 L232,338Z" fill="#f1d27a" ${K}/><path d="M180,350 H228 M182,364 H226" stroke="#c9a978" stroke-width="2"/><path d="M178,338 q10,-12 20,0 q10,-10 20,0 q8,-8 14,0" fill="#7cc6f0" stroke="${INK}" stroke-width="2"/>`,
+    funny:'Just smelly socks in the laundry basket. Pooh!'},
+  {id:'table',n:'under the table',x:300,y:258,hx:300,hy:292,draw:()=>`<rect x="244" y="230" width="112" height="12" rx="3" fill="#a8652f" ${K}/><path d="M254,242 V292 M346,242 V292" stroke="${INK}" stroke-width="6" stroke-linecap="round"/><path d="M244,242 H356 V262 Q300,272 244,262Z" fill="#f6efff" stroke="${INK}" stroke-width="2"/>`,
+    funny:'Only crumbs under the table!'},
+  {id:'lamp',n:'behind the lamp',x:150,y:190,hx:150,hy:112,draw:()=>`<path d="M126,110 H174 L184,146 H116Z" fill="#ffd34d" ${K}/><path d="M150,146 V238" stroke="${INK}" stroke-width="4"/><ellipse cx="150" cy="240" rx="18" ry="5" fill="#3a3346" ${K} stroke-width="2.4"/>`,
+    funny:'Just a lamp. Click, the light is on!'},
+  {id:'shelf',n:'on the bookshelf',x:232,y:118,hx:232,hy:76,draw:()=>`<rect x="196" y="74" width="72" height="90" fill="#a8652f" ${K}/><path d="M196,104 H268 M196,134 H268" stroke="${INK}" stroke-width="3"/>${[[202,'#d8243c'],[212,'#2c8fd6'],[222,'#ffd34d'],[234,'#7fc36b'],[246,'#8a4fc4']].map(([x,c],k)=>`<rect x="${x}" y="${k%2?110:108}" width="9" height="${k%2?22:24}" fill="${c}" stroke="${INK}" stroke-width="1.2"/>`).join('')}`,
+    funny:'Only books on the shelf. Good stories!'},
+];
+const HID={round:1,spot:null,tries:0,found:false,wrong:[],best:loadJSON('catHide',{rounds:0}).rounds||0};
+function peekArt(s,round){
+  // what you can see of the hiding cat: a lot at first, then less and less
+  const big=round<=2,mid=round<=4;
+  const tail=`<path d="M${s.hx+18},${s.hy+6} q12,-4 14,-16 q2,-10 -4,-14" fill="none" stroke="${INK}" stroke-width="${big?7:5}" stroke-linecap="round"/><path d="M${s.hx+18},${s.hy+6} q12,-4 14,-16 q2,-10 -4,-14" fill="none" stroke="#f3a3c6" stroke-width="${big?3.5:2.5}" stroke-linecap="round"/>`;
+  const ears=`<path d="M${s.hx-14},${s.hy} L${s.hx-11},${s.hy-12} L${s.hx-4},${s.hy-2}Z M${s.hx+4},${s.hy-2} L${s.hx+12},${s.hy-14} L${s.hx+14},${s.hy}Z" fill="#a8652f" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>`;
+  if(big)return ears+tail;if(mid)return tail;
+  return `<path d="M${s.hx+28},${s.hy-6} q2,-6 -3,-9" fill="none" stroke="#f3a3c6" stroke-width="2.5" stroke-linecap="round"/>`;
+}
+function hideScreen(){
+  const s=HID.spot;
+  stage.innerHTML=DEFS+`<rect x="2" y="56" width="396" height="270" fill="#fff3d6"/><rect x="2" y="326" width="396" height="80" fill="#d9b48a"/>
+    <rect x="96" y="80" width="80" height="80" fill="#bfe6fb" stroke="${INK}" stroke-width="2.5"/><path d="M136,80 V160 M96,120 H176" stroke="${INK}" stroke-width="2.5"/>
+    ${backBtn('hide and seek')}
+    <text x="350" y="44" text-anchor="middle" class="tab" style="font-size:15px;fill:var(--pen)">ROUND ${HID.round}</text>
+    ${s&&!HID.found?`<g pointer-events="none">${peekArt(s,HID.round)}</g>`:''}
+    ${SPOTS.map(sp=>`<g class="hot" data-spot="${sp.id}" role="button" tabindex="0" aria-label="Look ${sp.n}">${sp.draw()}</g>`).join('')}
+    ${HID.found?`<g transform="translate(${s.hx},${s.hy+70}) scale(.6)"><g class="anim jump">${catSVG(S.wear,'happy')}</g></g><text x="${s.hx}" y="${s.hy-50}" text-anchor="middle" class="ttl" style="font-size:22px">You found me!</text>`:''}
+    <g id="fx" pointer-events="none"></g>
+    <text x="200" y="430" text-anchor="middle" class="lbl">${HID.found?'':'WHERE IS THE CAT?'}</text>
+    ${HID.found?btn('again',110,446,180,56,'PLAY AGAIN','#f3a3c6',19):`<text x="200" y="470" text-anchor="middle" class="tab" style="font-size:14px;fill:var(--pen)">TRIES: ${HID.tries}</text>`}
+    ${!HID.found&&HID.tries>=3?btn('hint',140,480,120,32,'MEOW?','#fff',14):''}`;
+}
+function hideRound(){HID.spot=pick(SPOTS.filter(s=>s!==HID.spot));HID.tries=0;HID.found=false;HID.wrong=[];hideScreen();
+  say(HID.round===1?'Hide and seek! The cat is hiding. Can you find it?':`Round ${HID.round}! The cat is hiding even better now.`,HID.round<=2?'Look for ears or a tail peeking out.':'Look very carefully!')}
+XG.hide={start(){HID.round=1;HID.spot=null;hideRound()},
+  act(el){
+    if(el.dataset.spot!==undefined){
+      if(HID.found)return true;const sp=SPOTS.find(s=>s.id===el.dataset.spot);HID.tries++;
+      if(sp===HID.spot){HID.found=true;if(HID.round>HID.best){HID.best=HID.round;saveJSON('catHide',{rounds:HID.best})}
+        hideScreen();sfx.meow();sfx.tada();hearts(6);say(`Boo! The cat was ${sp.n}! You found it in ${HID.tries} ${HID.tries>1?'tries':'try'}.`,'Tap PLAY AGAIN. Next time it hides better!');return true}
+      sfx.tap();restartClass(el,'wiggle',900);el.style.transformBox='fill-box';el.style.transformOrigin='center';hideScreen();
+      say(sp.funny+' Not there.',HID.tries>=3?'Tap MEOW? to hear where the cat is.':'Try somewhere else.');return true}
+    if(el.dataset.xgo==='again'){HID.round++;sfx.tap();hideRound();return true}
+    if(el.dataset.xgo==='hint'){sfx.meow();const s=HID.spot;say(`Meow! The meow came from ${s.x<140?'the left':s.x>260?'the right':'the middle'} of the room${s.y<200?', up high':s.y>320?', down low':''}.`,'');return true}
+    return false}};
+
+/* ---------- Build a cat house ----------
+   Pick a piece, tap where to drop it, and it falls onto the floor or onto the pieces below. Then tap PLAY and the cat climbs to the top. */
+const PIECES={
+  box:{n:'box',w:70,h:50,a:(w,h)=>`<rect x="${-w/2}" y="${-h}" width="${w}" height="${h}" fill="#d9a066" ${K}/><rect x="-4" y="${-h}" width="8" height="${h}" fill="#f1e05a" opacity=".85"/><circle cx="${-w/4}" cy="${-h/2}" r="9" fill="#5a3b20" stroke="${INK}" stroke-width="2"/>`},
+  cushion:{n:'cushion',w:80,h:20,a:(w,h)=>`<rect x="${-w/2}" y="${-h}" width="${w}" height="${h}" rx="10" fill="#f38db5" ${K}/>${heart(0,-h/2,.6,'#e0508a')}`},
+  post:{n:'scratching post',w:26,h:90,a:(w,h)=>`<rect x="${-w/2}" y="${-h}" width="${w}" height="${h}" fill="#e3c98f" ${K}/>${Array.from({length:8},(_,i)=>`<path d="M${-w/2},${-h+8+i*10} l${w},6" stroke="#b9975e" stroke-width="2"/>`).join('')}<rect x="-34" y="${-h-8}" width="68" height="10" rx="4" fill="#8a4fc4" ${K} stroke-width="2.4"/>`},
+  tunnel:{n:'tunnel',w:100,h:44,a:(w,h)=>`<path d="M${-w/2},0 V${-h/2} A${h/2},${h/2} 0 0 1 ${-w/2+h},${-h} H${w/2-h/2} A${h/2},${h/2} 0 0 1 ${w/2-h/2},0Z" fill="#3cb8e0" ${K}/><ellipse cx="${w/2-h/2}" cy="${-h/2}" rx="${h/2-4}" ry="${h/2-4}" fill="#1f4f5a" stroke="${INK}" stroke-width="2"/><path d="M${-w/2+16},${-h} V0 M${-w/2+40},${-h} V0" stroke="#fff" stroke-width="3"/>`},
+  shelf:{n:'shelf',w:120,h:14,a:(w,h)=>`<rect x="${-w/2}" y="${-h}" width="${w}" height="${h}" rx="3" fill="#a8652f" ${K}/>`},
+  hammock:{n:'hammock',w:96,h:30,a:(w,h)=>`<path d="M${-w/2},${-h} Q0,10 ${w/2},${-h}" fill="#7fc36b" ${K}/><path d="M${-w/2},${-h} v-6 M${w/2},${-h} v-6" stroke="${INK}" stroke-width="3"/>`},
+};
+const PKEYS=Object.keys(PIECES);
+const HB={pieces:loadJSON('catHouse',[]),pick:'box',playing:false,catAt:null};
+const GROUND=420;
+function settle(){
+  // drop every piece in order from the lowest, onto the highest thing under it
+  const placed=[];
+  HB.pieces.slice().sort((a,b)=>b.y-a.y).forEach(p=>{const d=PIECES[p.k];let top=GROUND;
+    placed.forEach(q=>{const e=PIECES[q.k];if(Math.abs(q.x-p.x)<(d.w+e.w)/2-6)top=Math.min(top,q.y-e.h)});
+    p.y=top;placed.push(p)});
+}
+function houseScreen(){
+  stage.innerHTML=DEFS+`<rect x="2" y="56" width="396" height="${GROUND-56}" fill="#eaf6ff"/>
+    <rect x="2" y="${GROUND}" width="396" height="12" fill="#d9b48a" stroke="${INK}" stroke-width="2"/>
+    ${backBtn('cat house')}
+    <rect id="buildArea" class="hot" data-xgo="drop" role="button" tabindex="0" aria-label="Drop the ${PIECES[HB.pick].n} here" x="2" y="56" width="396" height="${GROUND-56}" fill="transparent"/>
+    <g pointer-events="none">${HB.pieces.map(p=>`<g transform="translate(${p.x},${p.y})">${PIECES[p.k].a(PIECES[p.k].w,PIECES[p.k].h)}</g>`).join('')}</g>
+    <g pointer-events="none" id="catWrap" transform="translate(${HB.catAt?HB.catAt[0]:360},${HB.catAt?HB.catAt[1]:GROUND}) scale(.42)"><g id="catAnim" class="anim">${catSVG(S.wear,'happy')}</g></g>
+    <g id="fx" pointer-events="none"></g>
+    ${PKEYS.map((k,i)=>{const x=6+i*65,on=HB.pick===k,d=PIECES[k],s=Math.min(48/d.w,34/d.h,1);return `<g class="hot" data-piece="${k}" role="button" tabindex="0" aria-pressed="${on}" aria-label="${d.n}">
+      <rect x="${x}" y="438" width="61" height="58" rx="8" fill="${on?'#f3a3c6':'#fff'}" stroke="${INK}" stroke-width="${on?3:2}"/>
+      <g transform="translate(${x+30.5},${470+d.h*s/2}) scale(${s.toFixed(2)})">${d.a(d.w,d.h)}</g>
+      <text x="${x+30.5}" y="492" text-anchor="middle" class="tab" style="font-size:9px">${k.toUpperCase()}</text></g>`}).join('')}
+    <g>${btn('play',230,14,72,34,'PLAY','#ffd34d',15)}${btn('undo',306,14,40,34,'↶','#fff',18)}${btn('clear',350,14,44,34,'NEW','#fff',12)}</g>`;
+}
+async function climb(){
+  if(HB.playing)return;if(!HB.pieces.length){say('Build something first!','Pick a piece at the bottom, then tap where to drop it.');return}
+  HB.playing=true;
+  // visit the pieces from the bottom to the top
+  const tops=HB.pieces.map(p=>[p.x,p.y-PIECES[p.k].h+(p.k==='hammock'?PIECES.hammock.h-6:0),p.k]).sort((a,b)=>b[1]-a[1]);
+  say('Up, up, up the cat goes!','');
+  for(const t of tops){if(S.screen!=='house')return;HB.catAt=[t[0],t[1]];const w=$('#catWrap');
+    if(w){w.style.transition='transform .55s ease-in-out';w.setAttribute('transform',`translate(${t[0]},${t[1]}) scale(.42)`)}
+    sfx.pounce();await later(650);
+    if(t[2]==='tunnel'){sfx.whoosh()}if(t[2]==='post'){noise(.3,3000,.15,'bandpass')}}
+  if(S.screen!=='house')return;
+  const a=$('#catAnim');a&&restartClass(a,'jump',700);sfx.meow();hearts(6);
+  say(tops.length>=6?'Wow, what a tall cat tower! The cat is the king of the castle!':'The cat loves its new house! Purrr.','Add more pieces to make it even bigger.');
+  HB.playing=false;
+}
+XG.house={start(){HB.catAt=null;houseScreen();say('Build a cat house! Pick a piece, then tap where to drop it.','Then tap PLAY and watch the cat climb.')},
+  act(el){
+    if(el.dataset.piece!==undefined){sfx.tap();HB.pick=el.dataset.piece;houseScreen();say(`The ${PIECES[HB.pick].n}.`,'Tap where to drop it.');return true}
+    const g=el.dataset.xgo;if(!g)return false;
+    if(HB.playing)return true;
+    if(g==='drop'){const p=stagePt(window.__lastPt||{clientX:0,clientY:0});
+      if(HB.pieces.length>=24){say('The house is very full! Tap NEW to start again.','');return true}
+      const d=PIECES[HB.pick];HB.pieces.push({k:HB.pick,x:Math.round(Math.min(Math.max(p.x,d.w/2+4),396-d.w/2)),y:-999});settle();
+      if(HB.pieces.some(q=>q.y-PIECES[q.k].h<60)){HB.pieces.pop();settle();say('Too high! It would hit the sky.','');sfx.meow();return true}
+      HB.catAt=null;saveJSON('catHouse',HB.pieces);sfx.plop();houseScreen();say(pick(['Thump!','Clonk!','Plop!']),'Add more, or tap PLAY.');return true}
+    if(g==='play'){climb();return true}
+    if(g==='undo'){if(HB.pieces.length){HB.pieces.pop();settle();HB.catAt=null;saveJSON('catHouse',HB.pieces);sfx.off();houseScreen()}return true}
+    if(g==='clear'){HB.pieces=[];HB.catAt=null;saveJSON('catHouse',HB.pieces);sfx.swish();houseScreen();say('A new empty space to build in!','');return true}
+    return false}};
+stage.addEventListener('pointerdown',e=>{window.__lastPt={clientX:e.clientX,clientY:e.clientY}},true);
+
+/* ---------- Cat dance party ----------
+   DJ Catnip plays, and the paw pads light up. Tap a pad while it is lit to make the cat dance. */
+const PADS=[{c:'#e0508a',n:62},{c:'#ffd34d',n:65},{c:'#3cb8b0',n:69},{c:'#8a4fc4',n:72}];
+const DP={on:false,lit:-1,litAt:0,score:0,miss:0,beats:0,total:32,fast:false,hit:false,best:loadJSON('catDance',{best:0}).best||0};
+function danceScreen(){
+  const floor=[];for(let r=0;r<3;r++)for(let c=0;c<8;c++)floor.push(`<rect class="tile" x="${8+c*48}" y="${250+r*22}" width="48" height="22" fill="${FLOOR_COLS[(r*8+c)%FLOOR_COLS.length]}" stroke="${INK}" stroke-width="1.2"/>`);
+  stage.innerHTML=DEFS+`<rect x="2" y="56" width="396" height="262" rx="4" fill="#2b2240"/>
+    ${[[40,90],[360,100],[90,150],[310,160],[200,80]].map(([x,y],i)=>`<path class="${i%2?'pulse':''}" d="${starPath(x,y,6)}" fill="#ffd34d"/>`).join('')}
+    <g id="floor">${floor.join('')}</g>
+    ${backBtn('cat dance party')}
+    <text x="350" y="44" text-anchor="middle" class="tab" style="font-size:14px;fill:var(--pen)">★ ${DP.score}</text>
+    <g transform="translate(200,262) scale(.75)"><g id="catAnim" class="anim">${catSVG(S.wear,'happy')}</g></g>
+    <g transform="translate(330,170) scale(.4)"><g id="djAnim" class="anim">${catSVG({},'happy',{head:'#3a3346',body:'#9ccf6b',ear:'#f38db5'})}<path d="M-32,-112 Q0,-160 32,-112" fill="none" stroke="${INK}" stroke-width="6"/></g></g>
+    <text x="330" y="190" text-anchor="middle" class="tab" style="font-size:12px;fill:#fff">DJ CATNIP</text>
+    <rect x="20" y="300" width="${(360*Math.min(DP.beats/DP.total,1)).toFixed(1)}" height="8" rx="4" fill="#7fc36b"/>
+    ${PADS.map((p,i)=>`<g class="hot" data-pad="${i}" role="button" tabindex="0" aria-label="Paw pad ${i+1}">
+      <circle id="pad${i}" cx="${56+i*96}" cy="390" r="40" fill="${DP.lit===i?p.c:'#fff'}" stroke="${DP.lit===i?INK:p.c}" stroke-width="${DP.lit===i?4:5}"/>
+      <g transform="translate(${56+i*96},392) scale(2.1)" fill="${DP.lit===i?'#fff':p.c}">${PAW}</g></g>`).join('')}
+    ${DP.on?'':`<g>${btn('slow',40,446,150,56,'SLOW SONG','#c9a6ef',17)}${btn('fast',210,446,150,56,'FAST SONG','#f3a3c6',17)}</g>`}
+    ${DP.on?`<text x="200" y="476" text-anchor="middle" class="lbl">TAP THE PAW THAT LIGHTS UP!</text>`:''}`;
+}
+function setPad(i){
+  PADS.forEach((p,k)=>{const c=$('#pad'+k);if(!c)return;c.setAttribute('fill',k===i?p.c:'#fff');c.setAttribute('stroke',k===i?INK:p.c);c.setAttribute('stroke-width',k===i?4:5);
+    const paw=c.nextElementSibling;paw&&paw.setAttribute('fill',k===i?'#fff':p.c)});
+}
+function danceStep(){
+  const i=DP.beats%8,[k,h,cl]=BEAT[i];
+  if(k)sfx.kick();if(h)noise(.05,7000,.1);if(cl)noise(.12,1500,.15,'bandpass');
+  if(i%2===0){note(BASS[Math.floor(DP.beats/2)%8],'square',.2,.07);const d=$('#djAnim');d&&restartClass(d,'jump',400)}
+  // a pad lights every second beat
+  if(DP.beats%2===0){
+    if(DP.lit>=0&&!DP.hit){DP.miss++}
+    if(DP.beats>=DP.total){danceEnd();return}
+    let n;do{n=Math.floor(Math.random()*4)}while(n===DP.lit);DP.lit=n;DP.hit=false;DP.litAt=performance.now();setPad(n);
+  }
+  DP.beats++;const bar=stage.querySelector('rect[height="8"]');bar&&bar.setAttribute('width',(360*Math.min(DP.beats/DP.total,1)).toFixed(1));
+}
+function danceEnd(){
+  XT.forEach(f=>f());XT=[];DP.on=false;DP.lit=-1;
+  const stars=DP.score>=13?3:DP.score>=8?2:DP.score>=3?1:0;
+  if(DP.score>DP.best){DP.best=DP.score;saveJSON('catDance',{best:DP.best})}
+  danceScreen();sfx.tada();hearts(6+stars*2);
+  say(`The song is over! You hit ${DP.score} paws. ${['Good try!','Nice dancing!','Great dancing!','Superstar dancer!'][stars]}`,`Your best is ${DP.best}. Play another song!`);
+}
+function danceStart(fast){
+  XT.forEach(f=>f());XT=[];DP.fast=fast;DP.on=true;DP.score=0;DP.miss=0;DP.beats=0;DP.lit=-1;DP.hit=false;
+  danceScreen();say(fast?'A fast song! Get ready…':'A slow song! Get ready…','Tap the paw pad that lights up.');
+  xEvery(danceStep,fast?300:420);
+}
+XG.dance={start(){DP.on=false;DP.lit=-1;DP.beats=0;DP.score=0;danceScreen();say('Cat dance party! Tap the paw pads in time with the music to make the cat dance.','Pick a song to start.')},
+  act(el){
+    if(el.dataset.pad!==undefined){const i=+el.dataset.pad;note(PADS[i].n,'triangle',.4,.18);
+      if(!DP.on){restartClass($('#catAnim'),pick(MOVES),900);return true}
+      if(i===DP.lit&&!DP.hit){DP.hit=true;DP.score++;setPad(-1);const a=$('#catAnim');a&&restartClass(a,pick(MOVES),700);flashFloor();
+        const t=stage.querySelector('text[x="350"]');t&&(t.textContent='★ '+DP.score);
+        $('#story').textContent=pick(['Great!','Yes!','Cool moves!','Perfect!','Woohoo!']);}
+      else{$('#story').textContent='Oops!'}
+      return true}
+    if(el.dataset.xgo==='slow'||el.dataset.xgo==='fast'){danceStart(el.dataset.xgo==='fast');return true}
+    return false},
+  stop(){DP.on=false}};
+
+/* ---------- Adopt a kitten ----------
+   Pick a kitten's fur and eyes, give it a name, then feed it, play with it and brush it every day so it grows up. */
+const FURS=[{head:'#a8652f',body:'#f3a3c6',ear:'#f1e05a'},{head:'#8d8d9a',body:'#d3d4dc',ear:'#f3a3c6'},{head:'#f5891f',body:'#ffd34d',ear:'#f3a3c6'},{head:'#3a3346',body:'#fff',ear:'#f3a3c6'},{head:'#fff',body:'#f6b3cb',ear:'#e0508a'},{head:'#7cc6f0',body:'#c9a6ef',ear:'#fff'}];
+const EYES=['#1f8a4c','#2c8fd6','#d6ad45','#8a5a2b'];
+const KNAMES=['Biscuit','Pebble','Muffin','Star','Whiskers','Mochi','Pudding','Socks'];
+const KT=loadJSON('catKitten',null)||{stage:'pick',fur:0,eye:0,name:'',day:1,fed:false,played:false,brushed:false};
+const saveKitten=()=>saveJSON('catKitten',KT);
+const GROW=[{n:'tiny kitten',s:.65},{n:'kitten',s:.78},{n:'big kitten',s:.9},{n:'young cat',s:1.02},{n:'grown-up cat',s:1.12}];
+const growStage=()=>Math.min(Math.floor((KT.day-1)/2),GROW.length-1);
+function kittenArt(m='happy',scale){const p=Object.assign({},FURS[KT.fur]);
+  // coloured eyes: draw the cat, then put coloured irises where its eyes are
+  const eyes=m==='sleep'||m==='happy'?'':`<circle cx="-10" cy="-104" r="4.6" fill="${EYES[KT.eye]}" stroke="${INK}" stroke-width="1.4"/><circle cx="10" cy="-104" r="4.6" fill="${EYES[KT.eye]}" stroke="${INK}" stroke-width="1.4"/><circle cx="-10" cy="-104" r="2" fill="${INK}"/><circle cx="10" cy="-104" r="2" fill="${INK}"/><circle cx="-8.8" cy="-105.6" r="1.1" fill="#fff"/><circle cx="11.2" cy="-105.6" r="1.1" fill="#fff"/>`;
+  return catSVG(KT.wear||{},m,p)+eyes}
+function kittenScreen(){
+  if(KT.stage==='pick'){
+    stage.innerHTML=DEFS+`${backBtn('adopt a kitten')}
+      <g transform="translate(200,290) scale(.95)"><g id="catAnim" class="anim">${kittenArt('normal')}</g></g>
+      <text x="200" y="330" text-anchor="middle" class="lbl">FUR</text>
+      ${FURS.map((f,i)=>`<g class="hot" data-fur="${i}" role="button" tabindex="0" aria-pressed="${KT.fur===i}" aria-label="Fur ${i+1}">
+        <rect x="${30+i*58}" y="340" width="50" height="44" rx="10" fill="${KT.fur===i?'#f3a3c6':'#fff'}" stroke="${INK}" stroke-width="${KT.fur===i?3:2}"/>
+        <rect x="${40+i*58}" y="348" width="14" height="28" rx="3" fill="${f.head}" stroke="${INK}" stroke-width="1.4"/><rect x="${56+i*58}" y="348" width="14" height="28" rx="3" fill="${f.body}" stroke="${INK}" stroke-width="1.4"/></g>`).join('')}
+      <text x="200" y="408" text-anchor="middle" class="lbl">EYES</text>
+      ${EYES.map((c,i)=>`<g class="hot" data-eye="${i}" role="button" tabindex="0" aria-pressed="${KT.eye===i}" aria-label="Eye colour ${i+1}">
+        <circle cx="${110+i*60}" cy="434" r="${KT.eye===i?18:15}" fill="${c}" stroke="${INK}" stroke-width="${KT.eye===i?4:2}"/><circle cx="${110+i*60}" cy="434" r="6" fill="${INK}"/></g>`).join('')}
+      ${btn('toname',110,462,180,48,'NEXT: NAME ▶','#f3a3c6',17)}`;return}
+  if(KT.stage==='name'){
+    stage.innerHTML=DEFS+`${backBtn('adopt a kitten')}
+      <g transform="translate(200,250) scale(.8)"><g id="catAnim" class="anim">${kittenArt('normal')}</g></g>
+      <text x="200" y="290" text-anchor="middle" class="lbl">WHAT IS YOUR KITTEN CALLED?</text>
+      <foreignObject x="70" y="300" width="260" height="46"><input xmlns="http://www.w3.org/1999/xhtml" id="kname" maxlength="14" value="${esc(KT.name)}" placeholder="Type a name" aria-label="Kitten's name" style="width:100%;height:42px;box-sizing:border-box;border:2.5px solid #1d1a1f;border-radius:21px;text-align:center;font-family:var(--display);font-size:22px;color:#e0508a;background:#fff;text-transform:uppercase"/></foreignObject>
+      ${KNAMES.map((n,i)=>btn('n_'+n,14+(i%4)*96,356+Math.floor(i/4)*42,90,36,n.toUpperCase(),'#d7ecfa',13)).join('')}
+      ${btn('adopt',110,450,180,54,'ADOPT! ♥','#f3a3c6',19)}`;
+    const inp=$('#kname');inp&&inp.addEventListener('input',()=>{KT.name=inp.value.slice(0,14);saveKitten()});return}
+  const g=GROW[growStage()],s=g.s,done=KT.fed&&KT.played&&KT.brushed;
+  const tick=(b,x)=>b?`<path d="M${x+44},322 l5,5 l10,-12" fill="none" stroke="#1f8a4c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`:'';
+  stage.innerHTML=DEFS+`<rect x="2" y="56" width="396" height="250" fill="#fdf1f6"/><rect x="2" y="250" width="396" height="56" fill="#cdeee2"/>
+    ${backBtn('adopt a kitten')}
+    <text x="200" y="84" text-anchor="middle" class="ttl" style="font-size:24px">${esc((KT.name||'Kitty').toUpperCase())}</text>
+    <text x="200" y="104" text-anchor="middle" class="tab" style="font-size:13px;fill:var(--pen)">DAY ${KT.day} · ${g.n.toUpperCase()}</text>
+    <g id="toy" pointer-events="none"></g>
+    <g class="hot" data-xgo="pet" role="button" tabindex="0" aria-label="Pet ${esc(KT.name||'the kitten')}"><rect x="110" y="110" width="180" height="180" fill="transparent"/>
+      <g transform="translate(200,296) scale(${s})"><g id="catAnim" class="anim">${kittenArt(KT.busy||'happy')}</g></g></g>
+    <g id="fx" pointer-events="none"></g>
+    ${btn('feed',16,312,118,40,'FEED','#fff',16)}${tick(KT.fed,16+40)}
+    ${btn('play',141,312,118,40,'PLAY','#fff',16)}${tick(KT.played,141+40)}
+    ${btn('brush',266,312,118,40,'BRUSH','#fff',16)}${tick(KT.brushed,266+40)}
+    <text x="200" y="384" text-anchor="middle" class="lbl" style="font-size:15px">${done?'ALL DONE FOR TODAY!':'FEED, PLAY AND BRUSH EVERY DAY'}</text>
+    ${done?btn('sleep',100,398,200,52,'SLEEP ★ NEXT DAY','#f3a3c6',16):''}
+    ${btn('dressk',16,460,180,44,'DRESS UP','#d7ecfa',15)}${btn('newkit',204,460,180,44,'NEW KITTEN','#fff',15)}`;
+}
+async function careDo(what){
+  if(KT.busy)return;const name=KT.name||'Your kitten';
+  if(what==='feed'){if(KT.fed){say(`${name} is full! No more food today.`,'');return}
+    KT.busy='happy';$('#toy').innerHTML=`<g transform="translate(260,290)"><ellipse rx="26" ry="8" fill="#e0508a" ${K}/><path d="M-16,-6 q8,-8 16,0 q8,-8 16,0" fill="#f9a03f" stroke="${INK}" stroke-width="1.5"/></g>`;
+    sfx.slurp();await later(1300);KT.fed=true;say(`Munch munch! ${name} loves fish. Yum!`,'')}
+  if(what==='play'){if(KT.played){say(`${name} is tired from playing. Maybe tomorrow!`,'');return}
+    KT.busy='happy';const t=$('#toy');for(let k=0;k<3;k++){t.innerHTML=`<g transform="translate(${120+k*80},${200+(k%2)*40})"><g class="pop"><circle r="12" fill="#f38db5" stroke="${INK}" stroke-width="2"/><path d="M-8,-4 q8,8 16,0 M-10,4 q10,-6 20,0" fill="none" stroke="#e0508a" stroke-width="1.5"/></g></g>`;
+      sfx.pounce();restartClass($('#catAnim'),'jump',700);await later(650)}
+    KT.played=true;say(`${name} chased the ball of yarn! So much fun!`,'')}
+  if(what==='brush'){if(KT.brushed){say(`${name}'s fur is already soft and shiny.`,'');return}
+    KT.busy='happy';const t=$('#toy');for(let k=0;k<4;k++){t.innerHTML=`<g transform="translate(${170+(k%2)*60},${190+k*18}) rotate(-20)"><rect x="-18" y="-6" width="36" height="12" rx="4" fill="#a8652f" ${K} stroke-width="2"/><path d="M-14,6 v6 M-8,6 v6 M-2,6 v6 M4,6 v6 M10,6 v6" stroke="${INK}" stroke-width="2"/></g>`;
+      noise(.25,4000,.1,'bandpass');await later(450)}
+    KT.brushed=true;say(`Brush, brush. ${name}'s fur is soft and shiny. Purrr!`,'')}
+  KT.busy=null;saveKitten();kittenScreen();
+  if(KT.fed&&KT.played&&KT.brushed){sfx.tada();hearts(6);say(`${name} is happy! Tap SLEEP to go to the next day.`,'')}
+}
+XG.kitten={start(){KT.busy=null;kittenScreen();
+    say(KT.stage==='home'?`${KT.name||'Your kitten'} is happy to see you!`:'Adopt a kitten! Choose its fur and its eyes.',KT.stage==='home'?'Feed, play and brush every day so it grows up.':'Then tap NEXT.')},
+  act(el){
+    if(el.dataset.fur!==undefined){sfx.tap();KT.fur=+el.dataset.fur;saveKitten();kittenScreen();return true}
+    if(el.dataset.eye!==undefined){sfx.tap();KT.eye=+el.dataset.eye;saveKitten();kittenScreen();return true}
+    const g=el.dataset.xgo;if(!g)return false;
+    if(g==='toname'){sfx.tap();KT.stage='name';saveKitten();kittenScreen();say('What will you call your kitten?','Type a name, or tap one.');return true}
+    if(g.startsWith('n_')){sfx.tap();KT.name=g.slice(2);saveKitten();const i=$('#kname');i&&(i.value=KT.name);say(KT.name+'!','Tap ADOPT when you are ready.');return true}
+    if(g==='adopt'){const i=$('#kname');if(i)KT.name=i.value.trim().slice(0,14);if(!KT.name){say('Your kitten needs a name!','Type one, or tap one.');return true}
+      KT.stage='home';KT.day=1;KT.fed=KT.played=KT.brushed=false;saveKitten();kittenScreen();sfx.tada();hearts(8);sfx.meow();
+      say(`Welcome home, ${KT.name}! Look after your kitten every day and it will grow up.`,'Tap FEED, PLAY and BRUSH.');return true}
+    if(g==='feed'||g==='play'||g==='brush'){careDo(g);return true}
+    if(g==='pet'){if(KT.stage!=='home')return true;sfx.purr?sfx.purr():sfx.meow();restartClass($('#catAnim'),'wiggle',900);say(`${KT.name||'Your kitten'} purrs. Purrrr.`,'');return true}
+    if(g==='sleep'){const before=growStage();KT.day++;KT.fed=KT.played=KT.brushed=false;saveKitten();
+      KT.busy='sleep';kittenScreen();note(64,'sine',1,.1);
+      xLater(()=>{KT.busy=null;kittenScreen();const after=growStage();
+        say(after>before?`Good morning! ${KT.name} grew up into a ${GROW[after].n}!`:`Good morning! Day ${KT.day}. ${KT.name} is hungry.`,'Feed, play and brush again.');
+        if(after>before){sfx.tada();hearts(8)}},1600);
+      say('Night night. Zzz…','');return true}
+    if(g==='dressk'){KT.wear=KT.wear&&KT.wear.hat?{}:{hat:pick(['crown','bow','sunhat','tophat'])};saveKitten();kittenScreen();sfx.swish();say(KT.wear.hat?`${KT.name} wears a ${itemOf('hat',KT.wear.hat).name}!`:'Hat off!','Tap DRESS UP again for another.');return true}
+    if(g==='newkit'){KT.stage='pick';KT.wear={};saveKitten();kittenScreen();say('Choose a new kitten: its fur and its eyes.','Then tap NEXT.');return true}
+    return false}};
+
 /* ---------- moving between screens ---------- */
 function show(screen){
-  S.screen=screen;musicStop();bedStop();stage.classList.remove('drawing');
+  S.screen=screen;musicStop();bedStop();xStopAll();stage.classList.remove('drawing');
   if(screen==='home'){homeScreen();say('Pick a game! These games are by Carolina.','Tap a box to play.')}
   else if(screen==='craft'){craftScreen();say('Craft with a cat! Here is a big empty piece of paper.','Pick PEN, PAWS or SPLAT, and a colour from the bottom. Then tap the paper.')}
   else if(screen==='music'){musicScreen();say('Make music with a cat! Play the piano, the drum and the cat guitar.','Tap DJ CATNIP for music, and the dance floor to dance.')}
@@ -1470,6 +1927,7 @@ function show(screen){
   else if(screen==='heads'){startMatch()}
   else if(screen==='paths'){startPaths()}
   else if(screen==='wash'){startWash()}
+  else if(XG[screen]){XG[screen].start()}
   else if(screen==='help'){S.mood='ache';startHelp()}
   else if(screen==='dress'){S.mood='normal';dressScreen();say('Dress up the cat! What will the cat wear today?','Tap DRESS, SHOES, T-SHIRT or TROUSERS, then pick something from the shelf.')}
 }
@@ -1487,6 +1945,7 @@ function act(el){
   if(S.screen==='heads'&&matchAct(el))return;
   if(S.screen==='paths'&&pathsAct(el))return;
   if(S.screen==='wash'&&washAct(el))return;
+  if(XG[S.screen]&&XG[S.screen].act(el))return;
   if(el.dataset.tool!==undefined){sfx.tap();const t=el.dataset.tool;H.tool=H.tool===t?null:t;if(H.done)H.tool=null;helpScreen();
     if(H.done)say(`${H.pat.name} is all better now!`,'Tap NEXT PATIENT, or OTHER GAMES.');
     else if(H.tool)say(`The ${TOOL(H.tool).name.toLowerCase()}.`,toolHint());else say('No tool.','Pick a tool from the side.');return}
