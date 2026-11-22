@@ -57,10 +57,34 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(1.4rem,7vw,1.8rem)
 @keyframes floaty{0%{transform:translateY(0) scale(.5);opacity:1}100%{transform:translateY(-110px) scale(1.1);opacity:0}}
 .jit{animation:jit .5s steps(2)}
 @keyframes jit{50%{transform:translate(0,1.5px)}}
+.breathe{animation:breathe 2.6s ease-in-out infinite}
+@keyframes breathe{50%{transform:scale(1.05,1)}}
+.zzz text{font-family:var(--display);fill:#7cc6f0;font-size:30px;animation:zz 2.4s ease-out infinite;transform-box:fill-box}
+.zzz text:nth-child(2){animation-delay:.6s;font-size:24px}
+.zzz text:nth-child(3){animation-delay:1.2s;font-size:20px}
+@keyframes zz{0%{opacity:0;transform:translate(0,10px)}30%{opacity:1}100%{opacity:0;transform:translate(12px,-22px)}}
+.dropin{animation:dropin .3s ease-in}
+@keyframes dropin{from{transform:translateY(var(--dy))}to{transform:none}}
+.tochest{animation:tochest .9s ease-in forwards}
+@keyframes tochest{0%{transform:scale(1.3)}100%{transform:translate(var(--tx),var(--ty)) scale(.6);opacity:.4}}
+.flyin{animation:flyin .6s ease-in}
+@keyframes flyin{from{transform:translate(var(--fx),var(--fy))}to{transform:none}}
 .pulse{animation:pulse 1.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 @keyframes pulse{50%{transform:scale(1.06)}}
 @media (prefers-reduced-motion:reduce){.jump,.wiggle,.twirl,.pop,.floaty,.jit{animation:jit .5s steps(2)}
 @keyframes jit{50%{transform:translate(0,1.5px)}}
+.breathe{animation:breathe 2.6s ease-in-out infinite}
+@keyframes breathe{50%{transform:scale(1.05,1)}}
+.zzz text{font-family:var(--display);fill:#7cc6f0;font-size:30px;animation:zz 2.4s ease-out infinite;transform-box:fill-box}
+.zzz text:nth-child(2){animation-delay:.6s;font-size:24px}
+.zzz text:nth-child(3){animation-delay:1.2s;font-size:20px}
+@keyframes zz{0%{opacity:0;transform:translate(0,10px)}30%{opacity:1}100%{opacity:0;transform:translate(12px,-22px)}}
+.dropin{animation:dropin .3s ease-in}
+@keyframes dropin{from{transform:translateY(var(--dy))}to{transform:none}}
+.tochest{animation:tochest .9s ease-in forwards}
+@keyframes tochest{0%{transform:scale(1.3)}100%{transform:translate(var(--tx),var(--ty)) scale(.6);opacity:.4}}
+.flyin{animation:flyin .6s ease-in}
+@keyframes flyin{from{transform:translate(var(--fx),var(--fy))}to{transform:none}}
 .pulse{animation:none}}
 </style>
 </head>
@@ -166,7 +190,8 @@ const itemOf=(cat,id)=>CAT_OF(cat).items.find(i=>i.id===id);
 function catSVG(w={},m='normal',p=PINK){
   const ra='45,-61';
   let st='';for(let y=-74;y<=-6;y+=8) st+=`M-22,${y} q5.25,-5 10.5,0 t10.5,0 t10.5,0 t10.5,0 `;
-  const eyes=m==='ache'
+  const eyes=m==='sleep'?`<path d="M-15,-104 q5,5 10,0 M5,-104 q5,5 10,0" fill="none" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/>`
+    :m==='ache'
     ?`<circle cx="-10" cy="-103" r="3" fill="${INK}"/><circle cx="10" cy="-103" r="3" fill="${INK}"/><path d="M-16,-109 L-5,-113 M16,-109 L5,-113" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/>`
     :m==='happy'
     ?`<path d="M-15,-102 q5,-7 10,0 M5,-102 q5,-7 10,0" fill="none" stroke="${INK}" stroke-width="2.6" stroke-linecap="round"/>`
@@ -226,6 +251,12 @@ const sfx={
   tada(){seq('triangle',[[523,523,.12,.14],[659,659,.12,.14],[784,784,.12,.14],[1047,1047,.35,.16]])},
   paw(){seq('sine',[[500,300,.07,.12]])},
   splat(){noise(.25,600,.35,'lowpass');seq('sine',[[260,90,.18,.18]])},
+  crack(){noise(.18,2500,.3);seq('triangle',[[1300,700,.12,.12]])},
+  pop(){seq('sine',[[500,900,.09,.16]])},
+  chime(n){seq('triangle',[[523*Math.pow(1.12,n),523*Math.pow(1.12,n),.12,.14],[784*Math.pow(1.12,n),784*Math.pow(1.12,n),.2,.14]])},
+  whoosh(){noise(.5,900,.25,'bandpass')},
+  boom(){noise(.6,300,.6,'lowpass');seq('sine',[[120,40,.4,.6]])},
+  coin(){seq('triangle',[[988,988,.08,.14],[1319,1319,.25,.14]])},
   plop(){seq('sine',[[600,200,.12,.2]])},
   ding(){seq('sine',[[1568,1568,.5,.2]])},
   kick(){seq('sine',[[150,45,.18,.6]])},
@@ -260,8 +291,8 @@ const GAMES=[
   {id:'craft',name:['CRAFT WITH','A CAT'],ready:true,icon:()=>[[-18,-6,'#8a4fc4'],[16,-12,'#3cb8e0'],[4,14,'#e0508a']].map(([x,y,c])=>`<path d="M${x},${y-12} q6,6 12,2 q-2,8 2,12 q-8,0 -12,6 q-4,-6 -12,-6 q4,-6 2,-12 q6,4 8,-2Z" fill="${c}" stroke="${INK}" stroke-width="1.6"/>`).join('')},
   {id:'music',name:['MAKE MUSIC','WITH A CAT'],ready:true,icon:()=>`<path d="M-14,10 V-18 L14,-24 V4" fill="none" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/><ellipse cx="-19" cy="11" rx="7" ry="5.5" fill="#e0508a" ${K} stroke-width="2.4"/><ellipse cx="9" cy="5" rx="7" ry="5.5" fill="#8a4fc4" ${K} stroke-width="2.4"/>`},
   {id:'cook',name:['COOK WITH','A CAT'],ready:true,icon:()=>`<path d="M-16,0 L-12,20 H12 L16,0Z" fill="#8a4fc4" ${K} stroke-width="2.5"/><path d="M-19,0 Q-22,-14 -8,-14 Q-4,-26 8,-18 Q22,-18 19,0Z" fill="#f6b3cb" ${K} stroke-width="2.5"/><circle cx="2" cy="-22" r="4.5" fill="#d8243c" stroke="${INK}" stroke-width="1.8"/>`},
-  {id:'sleep',name:['BEDTIME','STORY'],icon:()=>`<path d="M8,-22 A20,20 0 1 0 22,8 A15,15 0 1 1 8,-22Z" fill="#ffd34d" ${K} stroke-width="2.5"/><text x="-26" y="-6" class="lbl" style="font-size:20px">z</text><text x="-34" y="-20" class="lbl" style="font-size:15px">z</text>`},
-  {id:'heads',name:['LOTS OF','CATS'],icon:()=>[[-20,4,'#3cb8e0'],[0,-8,'#8a4fc4'],[20,4,'#d6ad45']].map(([x,y,c])=>`<path transform="translate(${x},${y})" d="M-11,10 L-12,-6 L-10,-14 L-4,-7 L4,-7 L10,-14 L12,-6 L11,10Z" fill="${c}" ${K} stroke-width="2.2"/>`).join('')},
+  {id:'sleep',name:['BEDTIME','STORY'],ready:true,icon:()=>`<path d="M8,-22 A20,20 0 1 0 22,8 A15,15 0 1 1 8,-22Z" fill="#ffd34d" ${K} stroke-width="2.5"/><text x="-26" y="-6" class="lbl" style="font-size:20px">z</text><text x="-34" y="-20" class="lbl" style="font-size:15px">z</text>`},
+  {id:'heads',name:['LOTS OF','CATS'],ready:true,icon:()=>[[-20,4,'#3cb8e0'],[0,-8,'#8a4fc4'],[20,4,'#d6ad45']].map(([x,y,c])=>`<path transform="translate(${x},${y})" d="M-11,10 L-12,-6 L-10,-14 L-4,-7 L4,-7 L10,-14 L12,-6 L11,10Z" fill="${c}" ${K} stroke-width="2.2"/>`).join('')},
   {id:'wash',name:['WASH AND','CLEAN'],icon:()=>[[-14,6,11],[8,-8,9],[14,12,7],[-4,-16,6]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#d7ecfa" ${K} stroke-width="2.2"/><path d="M${x-r*.45},${y-r*.3} q${r*.25},${-r*.3} ${r*.5},${-r*.3}" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>`).join('')},
 ];
 function homeScreen(){
@@ -902,13 +933,317 @@ function cookAct(el){
   return false;
 }
 
+/* ---------- Bedtime story with a cat ----------
+   Make a little book: on each page, say the words into the microphone or type them, and draw a picture.
+   Then the book is read to you (or you read it out loud yourself), and the cat goes to sleep. */
+const B={pages:[{t:'',m:[]}],pg:0,mode:'make',colour:0,drawing:null,rec:null,readPg:0,timer:null};
+try{const d=JSON.parse(localStorage.getItem('catStory')||'null');if(d&&Array.isArray(d.pages)&&d.pages.length)B.pages=d.pages.slice(0,8)}catch(e){}
+function saveStory(){try{localStorage.setItem('catStory',JSON.stringify({pages:B.pages}))}catch(e){}}
+const BED_COLS=['#1d1a1f','#e0508a','#2c8fd6','#1f8a4c','#ffd34d','#f5891f','#8a4fc4'];
+const PIC={x:18,y:66,w:186,h:236};
+const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const Rec=window.SpeechRecognition||window.webkitSpeechRecognition;
+function storyScreen(){
+  B.mode='make';const pg=B.pages[B.pg],n=B.pages.length;
+  const cols=BED_COLS.map((c,i)=>`<g class="hot" data-bcol="${i}" role="button" tabindex="0" aria-pressed="${i===B.colour}" aria-label="${c}">
+      <circle cx="${32+i*25}" cy="320" r="${i===B.colour?11:9}" fill="${c}" stroke="${INK}" stroke-width="${i===B.colour?3:1.6}"/></g>`).join('');
+  stage.innerHTML=DEFS+`<defs><clipPath id="picClip"><rect x="${PIC.x}" y="${PIC.y}" width="${PIC.w}" height="${PIC.h}" rx="6"/></clipPath></defs>
+    ${backBtn('bedtime story')}
+    <text x="350" y="44" text-anchor="middle" class="tab" style="font-size:15px;fill:var(--pen)">PAGE ${B.pg+1} OF ${n}</text>
+    <rect x="12" y="60" width="376" height="248" rx="8" fill="#2b3f8f" stroke="${INK}" stroke-width="2.5"/>
+    <rect id="pic" x="${PIC.x}" y="${PIC.y}" width="${PIC.w}" height="${PIC.h}" rx="6" fill="#fff"/>
+    <g id="picMarks" clip-path="url(#picClip)" pointer-events="none">${picMarksAt(pg,PIC.x,PIC.y,1)}</g>
+    ${pg.m.length?'':`<text id="picHint" x="${PIC.x+PIC.w/2}" y="${PIC.y+PIC.h/2}" text-anchor="middle" class="tab" style="fill:#c9c9d6;font-size:16px" pointer-events="none">DRAW A PICTURE</text>`}
+    <rect x="210" y="66" width="172" height="236" rx="6" fill="#fffaf6"/>
+    <foreignObject x="214" y="70" width="164" height="228"><textarea xmlns="http://www.w3.org/1999/xhtml" id="storyText" aria-label="The words for this page" placeholder="Type the story here, or tap SPEAK and say it." style="width:100%;height:100%;box-sizing:border-box;border:none;background:transparent;resize:none;font-family:var(--body);font-size:19px;line-height:1.3;color:#1f5fa8;outline:none;padding:4px">${esc(pg.t)}</textarea></foreignObject>
+    ${cols}
+    <g class="hot" data-bgo="clearpic" role="button" tabindex="0" aria-label="Rub out the picture"><rect x="206" y="308" width="72" height="26" rx="13" fill="#fff" stroke="${INK}" stroke-width="2"/><text x="242" y="326" text-anchor="middle" class="tab" style="font-size:12px">RUB OUT</text></g>
+    <g class="hot" data-bgo="mic" role="button" tabindex="0" aria-pressed="${!!B.rec}" aria-label="Speak the words">
+      <rect x="286" y="308" width="98" height="26" rx="13" fill="${B.rec?'#e0508a':'#fff'}" stroke="${INK}" stroke-width="2"/>
+      <rect x="298" y="313" width="7" height="12" rx="3.5" fill="${B.rec?'#fff':INK}"/><path d="M295,320 q6,9 13,0 M301.5,326 v4" fill="none" stroke="${B.rec?'#fff':INK}" stroke-width="1.8"/>
+      <text x="344" y="326" text-anchor="middle" class="tab" style="font-size:12px;${B.rec?'fill:#fff':''}">${B.rec?'LISTENING…':'SPEAK'}</text></g>
+    <g class="hot" data-bgo="prev" role="button" tabindex="0" aria-label="Page before"><circle cx="40" cy="370" r="22" fill="#fff" ${K} ${B.pg?'':'opacity=".3"'}/><path d="M46,370 H32 M38,362 L31,370 L38,378" fill="none" stroke="#2c8fd6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></g>
+    <g class="hot" data-bgo="next" role="button" tabindex="0" aria-label="Next page"><circle cx="100" cy="370" r="22" fill="#fff" ${K} ${B.pg<n-1?'':'opacity=".3"'}/><path d="M94,370 H108 M102,362 L109,370 L102,378" fill="none" stroke="#2c8fd6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></g>
+    <g class="hot" data-bgo="add" role="button" tabindex="0" aria-label="Add a page"><rect x="140" y="348" width="118" height="44" rx="22" fill="#fff" ${K}/><text x="199" y="376" text-anchor="middle" class="tab" style="font-size:15px">+ NEW PAGE</text></g>
+    <g class="hot" data-bgo="newbook" role="button" tabindex="0" aria-label="Start a new book"><rect x="266" y="348" width="118" height="44" rx="22" fill="#fff" ${K}/><text x="325" y="376" text-anchor="middle" class="tab" style="font-size:15px">NEW BOOK</text></g>
+    <g class="hot pulse" data-bgo="readme" role="button" tabindex="0" aria-label="Read the book to me"><rect x="16" y="414" width="180" height="84" rx="16" fill="#f3a3c6" ${K}/>
+      <text x="106" y="450" text-anchor="middle" class="tab" style="font-size:20px">READ IT</text><text x="106" y="476" text-anchor="middle" class="tab" style="font-size:20px">TO ME</text></g>
+    <g class="hot" data-bgo="readself" role="button" tabindex="0" aria-label="I will read it myself"><rect x="204" y="414" width="180" height="84" rx="16" fill="#c9a6ef" ${K}/>
+      <text x="294" y="450" text-anchor="middle" class="tab" style="font-size:20px">I'LL READ</text><text x="294" y="476" text-anchor="middle" class="tab" style="font-size:20px">IT MYSELF</text></g>`;
+  stage.classList.add('drawing');
+  const ta=$('#storyText');ta&&ta.addEventListener('input',()=>{B.pages[B.pg].t=ta.value.slice(0,400);saveStory()});
+}
+const inPic=p=>p.x>=PIC.x&&p.x<=PIC.x+PIC.w&&p.y>=PIC.y&&p.y<=PIC.y+PIC.h;
+function bedDown(e){
+  if(S.screen!=='sleep'||B.mode!=='make')return;const p=stagePt(e);if(!inPic(p))return;e.preventDefault();
+  B.drawing={c:BED_COLS[B.colour],d:`M${r1(p.x-PIC.x)},${r1(p.y-PIC.y)} l0.1,0`};B.pages[B.pg].m.push(B.drawing);
+  const h=$('#picHint');h&&h.remove();
+  const g=$('#picMarks');g.insertAdjacentHTML('beforeend',`<path transform="translate(${PIC.x},${PIC.y})" d="${B.drawing.d}" fill="none" stroke="${B.drawing.c}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`);
+  B.el=g.lastElementChild;try{stage.setPointerCapture(e.pointerId)}catch(err){}
+}
+function bedMove(e){if(!B.drawing)return;const p=stagePt(e);
+  B.drawing.d+=` L${r1(Math.min(Math.max(p.x,PIC.x),PIC.x+PIC.w)-PIC.x)},${r1(Math.min(Math.max(p.y,PIC.y),PIC.y+PIC.h)-PIC.y)}`;B.el&&B.el.setAttribute('d',B.drawing.d)}
+function bedUp(){if(B.drawing){B.drawing=null;B.el=null;if(B.pages[B.pg].m.length>300)B.pages[B.pg].m.shift();saveStory()}}
+stage.addEventListener('pointerdown',bedDown);stage.addEventListener('pointermove',bedMove);
+stage.addEventListener('pointerup',bedUp);stage.addEventListener('pointercancel',bedUp);
+// the picture is stored relative to its own box, so redraw it that way
+function picMarksAt(pg,x,y,s){return `<g transform="translate(${x},${y}) scale(${s})">${pg.m.map(m=>`<path d="${m.d}" fill="none" stroke="${m.c}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`).join('')}</g>`}
+function micToggle(){
+  if(B.rec){try{B.rec.stop()}catch(e){}B.rec=null;storyScreen();return}
+  if(!Rec){say('The microphone does not work in this browser. Ask a grown-up to help you type the words.','Tap the page to type.');return}
+  try{speechSynthesis.cancel()}catch(e){}
+  const r=new Rec();r.lang='en-GB';r.interimResults=false;r.continuous=false;
+  r.onresult=ev=>{let t='';for(let i=ev.resultIndex;i<ev.results.length;i++)if(ev.results[i].isFinal)t+=ev.results[i][0].transcript;
+    if(t){const pg=B.pages[B.pg];t=t.trim();t=t[0].toUpperCase()+t.slice(1);if(!/[.!?]$/.test(t))t+='.';pg.t=(pg.t?pg.t.trim()+' ':'')+t;saveStory()}};
+  r.onerror=ev=>{B.rec=null;if(S.screen==='sleep'&&B.mode==='make'){storyScreen();say(ev.error==='not-allowed'?'The microphone is not allowed. Ask a grown-up to turn it on, or type the words.':'I did not hear anything. Try again!','Tap SPEAK and talk.')}};
+  r.onend=()=>{B.rec=null;if(S.screen==='sleep'&&B.mode==='make')storyScreen()};
+  B.rec=r;try{r.start()}catch(e){B.rec=null}
+  storyScreen();$('#story').textContent='I am listening! Tell me the story.';$('#hint').textContent='Tap LISTENING when you are done.';
+}
+function readPage(i,aloud){
+  B.mode='read';B.readPg=i;const pg=B.pages[i],last=i===B.pages.length-1;
+  stage.classList.remove('drawing');
+  stage.innerHTML=DEFS+`${backBtn('bedtime story')}
+    <rect x="12" y="60" width="376" height="350" rx="10" fill="#2b3f8f" stroke="${INK}" stroke-width="2.5"/>
+    <rect x="22" y="70" width="356" height="330" rx="6" fill="#fffaf6"/>
+    <path d="M200,70 V400" stroke="#e6dccf" stroke-width="2"/>
+    <rect x="30" y="80" width="162" height="208" rx="4" fill="#fff" stroke="#e6dccf" stroke-width="1.5"/>
+    ${picMarksAt(pg,30,80,162/PIC.w)}
+    <foreignObject x="208" y="80" width="162" height="312"><div xmlns="http://www.w3.org/1999/xhtml" style="font-family:var(--body);font-size:20px;line-height:1.3;color:#1f5fa8;overflow:hidden;height:100%;word-wrap:break-word">${esc(pg.t||'…')}</div></foreignObject>
+    <text x="110" y="330" text-anchor="middle" class="tab" style="font-size:15px;fill:#8a4fc4">PAGE ${i+1}</text>
+    <g class="hot pulse" data-bgo="${last?'sleep':'turn'}" role="button" tabindex="0" aria-label="${last?'The end':'Turn the page'}">
+      <rect x="110" y="424" width="180" height="70" rx="35" fill="#f3a3c6" ${K}/><text x="200" y="467" text-anchor="middle" class="tab" style="font-size:22px">${last?'THE END':'TURN PAGE'}</text></g>`;
+  if(aloud){$('#story').textContent=pg.t||'(This page has no words.)';$('#hint').textContent=last?'The end! Tap THE END.':'Tap TURN PAGE when you are ready.';speak(pg.t||'')}
+  else{try{speechSynthesis.cancel()}catch(e){}$('#story').textContent='Read this page out loud to the cat.';$('#hint').textContent=last?'Tap THE END when you finish.':'Tap TURN PAGE when you finish.'}
+}
+function goodnight(){
+  B.mode='sleep';stage.classList.remove('drawing');
+  stage.innerHTML=DEFS+`<rect x="0" y="0" width="400" height="520" rx="12" fill="#2b3f8f"/>
+    ${[[50,60],[120,40],[330,70],[260,30],[370,140],[30,170],[200,90]].map(([x,y],i)=>`<path class="${i%2?'pulse':''}" d="${starPath(x,y,i%3?5:8)}" fill="#ffd34d"/>`).join('')}
+    <path d="M300,120 A34,34 0 1 0 336,164 A26,26 0 1 1 300,120Z" fill="#fff6c8" ${K}/>
+    <rect x="40" y="330" width="320" height="70" rx="12" fill="#f3a3c6" ${K}/><rect x="40" y="290" width="30" height="110" rx="8" fill="#a8652f" ${K}/>
+    <rect x="80" y="312" width="80" height="34" rx="16" fill="#fff" ${K}/>
+    <g transform="translate(206,316) rotate(-84) scale(.8)"><g class="anim breathe">${catSVG(S.wear,'sleep')}</g></g>
+    <path d="M150,334 Q240,300 352,334 V376 H150Z" fill="#7cc6f0" ${K}/><path d="M170,350 q20,-8 40,0 t40,0 t40,0 t40,0" fill="none" stroke="#fff" stroke-width="3"/>
+    <g class="zzz" pointer-events="none"><text x="130" y="270">Z</text><text x="152" y="246">z</text><text x="170" y="228">z</text></g>
+    <text x="200" y="450" text-anchor="middle" class="ttl" style="fill:#fff6c8">Good night, cat!</text>
+    <g class="hot" data-bgo="restart" role="button" tabindex="0" aria-label="Make a new story"><rect x="30" y="466" width="160" height="44" rx="22" fill="#fff" ${K}/><text x="110" y="494" text-anchor="middle" class="tab" style="font-size:16px">NEW STORY</text></g>
+    <g class="hot" data-go="home" role="button" tabindex="0" aria-label="Other games"><rect x="210" y="466" width="160" height="44" rx="22" fill="#fff" ${K}/><text x="290" y="494" text-anchor="middle" class="tab" style="font-size:16px">OTHER GAMES</text></g>`;
+  say('The end. The cat is fast asleep. Good night, sleep tight!','Make a new story, or pick another game.');lullabyNotes();
+}
+function lullabyNotes(){const tune=[64,67,69,67,64,62,60];tune.forEach((n,i)=>setTimeout(()=>{if(S.screen==='sleep'&&B.mode==='sleep')note(n,'sine',1.2,.12)},2500+i*650))}
+function bedStop(){if(B.rec){try{B.rec.stop()}catch(e){}B.rec=null}}
+function bedAct(el){
+  if(el.dataset.bcol!==undefined){sfx.tap();B.colour=+el.dataset.bcol;storyScreen();return true}
+  const g=el.dataset.bgo;if(!g){if(el.dataset.go==='home'&&B.mode==='read'){storyScreen();say('Back to making the book.','');return true}return false}
+  if(g==='mic'){micToggle();return true}
+  bedStop();
+  if(g==='clearpic'){B.pages[B.pg].m=[];saveStory();sfx.off();storyScreen();return true}
+  if(g==='prev'){if(B.pg>0){B.pg--;sfx.tap();storyScreen()}return true}
+  if(g==='next'){if(B.pg<B.pages.length-1){B.pg++;sfx.tap();storyScreen()}return true}
+  if(g==='add'){if(B.pages.length>=8){say('The book is full! Eight pages is a lot of story.','Tap READ IT TO ME.');return true}
+    B.pages.push({t:'',m:[]});B.pg=B.pages.length-1;saveStory();sfx.swish();storyScreen();say(`Page ${B.pg+1}! What happens next?`,'Draw a picture, and type or say the words.');return true}
+  if(g==='newbook'||g==='restart'){B.pages=[{t:'',m:[]}];B.pg=0;saveStory();sfx.swish();storyScreen();say('A new book! Once upon a time…','Draw a picture, and type or say the words.');return true}
+  if(g==='readme'||g==='readself'){
+    if(!B.pages.some(p=>p.t.trim()||p.m.length)){sfx.meow();say('The book is empty! Draw a picture or write some words first.','Tap SPEAK, or type on the page.');return true}
+    B.aloud=g==='readme';sfx.tap();readPage(0,B.aloud);return true}
+  if(g==='turn'){sfx.swish();readPage(B.readPg+1,B.aloud);return true}
+  if(g==='sleep'){goodnight();return true}
+  return false;
+}
+
+/* ---------- Lots of cats ----------
+   Carolina's grid of coloured cat heads, as a swap-and-match game. Swap two cats next to each other to line up
+   three or more of the same colour. Some cats are frozen in ice cubes: a match on them or right next to them breaks
+   the ice and frees the cat. Each level has one cat rocket that explodes where you throw it. Freed cats and finished
+   levels give coins, and the coins go into the treasure chest, like a piggy bank. */
+const MC=['#3cb8e0','#8a4fc4','#d6ad45','#d8243c','#1f4f5a'];
+const MC_NAME=['blue','purple','gold','red','dark'];
+const GN=7,GS=50,GX=25,GY=110; // grid size, cell size, top-left corner
+const G={lv:1,grid:[],ice:[],sel:null,busy:false,rocket:1,aim:false,coins:0,freed:0,total:0,won:false,drop:{}};
+try{const d=JSON.parse(localStorage.getItem('catMatch')||'null');if(d){G.coins=d.coins|0;G.lv=Math.max(1,d.lv|0)}}catch(e){}
+function saveMatch(){try{localStorage.setItem('catMatch',JSON.stringify({coins:G.coins,lv:G.lv}))}catch(e){}}
+function catHead(c,mark){
+  const marks=[``,
+    `<path d="M-4,-8 v5 M0,-9 v6 M4,-8 v5" stroke="${INK}" stroke-width="1.4" stroke-linecap="round"/>`,
+    `<circle cx="-7" cy="5" r="2" fill="#fff" opacity=".8"/><circle cx="8" cy="-2" r="1.6" fill="#fff" opacity=".8"/><circle cx="6" cy="7" r="1.4" fill="#fff" opacity=".8"/>`,
+    `<ellipse cx="0" cy="5" rx="6" ry="4" fill="#fff" opacity=".85"/>`,
+    `<path d="${starPath(-7,-6,3.2)}" fill="#ffd34d"/>`][mark];
+  return `<path d="M-14,12 L-15,-6 L-13,-17 L-5,-9 L5,-9 L13,-17 L15,-6 L14,12 Q14,15 11,15 H-11 Q-14,15 -14,12Z" fill="${c}" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>
+    ${marks}<circle cx="-5" cy="0" r="2" fill="${INK}"/><circle cx="5" cy="0" r="2" fill="${INK}"/><circle cx="-4.4" cy="-.7" r=".7" fill="#fff"/><circle cx="5.6" cy="-.7" r=".7" fill="#fff"/>
+    <path d="M-1.6,4 H1.6 L0,5.6Z" fill="#e0508a"/><path d="M-3,7 q1.5,1.6 3,0 q1.5,1.6 3,0" fill="none" stroke="${INK}" stroke-width="1.2" stroke-linecap="round"/>`;
+}
+const nCol=()=>G.lv<3?4:5;
+const rnd=()=>Math.floor(Math.random()*nCol());
+function newLevel(){
+  G.grid=[];G.ice=[];G.sel=null;G.rocket=1;G.aim=false;G.won=false;G.freed=0;G.drop={};
+  for(let r=0;r<GN;r++){G.grid.push([]);G.ice.push([]);for(let c=0;c<GN;c++){let v;
+    do{v=rnd()}while((c>1&&G.grid[r][c-1]===v&&G.grid[r][c-2]===v)||(r>1&&G.grid[r-1][c]===v&&G.grid[r-2][c]===v));
+    G.grid[r].push(v);G.ice[r].push(false)}}
+  G.total=Math.min(3+G.lv,14);
+  const cells=shuffle([...Array(GN*(GN-1)).keys()].map(i=>i+GN)).slice(0,G.total);
+  cells.forEach(i=>{G.ice[Math.floor(i/GN)][i%GN]=true});
+  if(!hasMove())newLevel();
+}
+function findMatches(){
+  const hit=new Set();
+  for(let r=0;r<GN;r++)for(let c=0;c<GN;c++){const v=G.grid[r][c];if(v<0)continue;
+    if(c<GN-2&&G.grid[r][c+1]===v&&G.grid[r][c+2]===v){let k=c;while(k<GN&&G.grid[r][k]===v){hit.add(r*GN+k);k++}}
+    if(r<GN-2&&G.grid[r+1][c]===v&&G.grid[r+2][c]===v){let k=r;while(k<GN&&G.grid[k][c]===v){hit.add(k*GN+c);k++}}}
+  return hit;
+}
+function swapCells(a,b){const[ra,ca]=a,[rb,cb]=b;const t=G.grid[ra][ca];G.grid[ra][ca]=G.grid[rb][cb];G.grid[rb][cb]=t}
+function hasMove(){
+  for(let r=0;r<GN;r++)for(let c=0;c<GN;c++)for(const[dr,dc]of[[0,1],[1,0]]){const r2=r+dr,c2=c+dc;
+    if(r2>=GN||c2>=GN||G.ice[r][c]||G.ice[r2][c2])continue;
+    swapCells([r,c],[r2,c2]);const ok=findMatches().size>0;swapCells([r,c],[r2,c2]);if(ok)return true}
+  return false;
+}
+function matchScreen(){
+  const cells=[];
+  for(let r=0;r<GN;r++)for(let c=0;c<GN;c++){
+    const x=GX+c*GS+GS/2,y=GY+r*GS+GS/2,v=G.grid[r][c],sel=G.sel&&G.sel[0]===r&&G.sel[1]===c,ice=G.ice[r][c],dr=G.drop[r*GN+c];
+    cells.push(`<g class="hot" data-cell="${r},${c}" role="button" tabindex="-1" aria-label="${v<0?'empty':MC_NAME[v]+' cat'}${ice?' frozen in ice':''}">
+      <rect x="${x-GS/2+1}" y="${y-GS/2+1}" width="${GS-2}" height="${GS-2}" rx="7" fill="${(r+c)%2?'#fdf1f6':'#fff'}"/>
+      ${sel?`<rect x="${x-GS/2+2}" y="${y-GS/2+2}" width="${GS-4}" height="${GS-4}" rx="8" fill="#ffe873" stroke="#e0508a" stroke-width="3"/>`:''}
+      ${v>=0?`<g transform="translate(${x},${y+2}) scale(1.25)"><g class="${dr?'dropin':''}" style="${dr?`--dy:${-dr*GS/1.25}px`:''}">${catHead(MC[v],v)}</g></g>`:''}
+      ${ice?`<rect x="${x-GS/2+3}" y="${y-GS/2+3}" width="${GS-6}" height="${GS-6}" rx="6" fill="#bfe6fb" fill-opacity=".62" stroke="#5aa9d6" stroke-width="2.5"/><path d="M${x-15},${y-12} l8,-6 M${x-15},${y-4} l14,-11 M${x+8},${y+14} l9,-7" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>`:''}</g>`);
+  }
+  G.drop={};
+  const left=G.ice.flat().filter(Boolean).length;
+  stage.innerHTML=DEFS+`${backBtn('lots of cats')}
+    <g class="hot" data-mgo="chest" role="button" tabindex="0" aria-label="Treasure chest: ${G.coins} coins">
+      <g id="chest"><rect x="304" y="22" width="76" height="40" rx="5" fill="#a8652f" ${K} stroke-width="2.5"/><path d="M304,34 Q342,4 380,34" fill="#c8853b" ${K} stroke-width="2.5"/>
+      <rect x="337" y="28" width="10" height="12" rx="2" fill="#ffd34d" stroke="${INK}" stroke-width="1.8"/></g>
+      <circle cx="318" cy="76" r="9" fill="#ffd34d" stroke="${INK}" stroke-width="2"/><text x="318" y="80.5" text-anchor="middle" class="tab" style="font-size:11px">C</text>
+      <text x="332" y="82" class="tab" style="font-size:17px" id="coinCount">${G.coins}</text></g>
+    <text x="40" y="92" class="tab" style="font-size:15px;fill:var(--pen)">LEVEL ${G.lv}</text>
+    <g transform="translate(138,86) scale(.6)">${catHead('#3cb8e0',0)}<rect x="-17" y="-20" width="34" height="38" rx="5" fill="#bfe6fb" fill-opacity=".6" stroke="#5aa9d6" stroke-width="3"/></g>
+    <text x="156" y="92" class="tab" style="font-size:15px;fill:var(--pen)">${left} TO FREE</text>
+    <rect x="${GX-4}" y="${GY-4}" width="${GN*GS+8}" height="${GN*GS+8}" rx="10" fill="#f3a3c6" stroke="${INK}" stroke-width="2.5"/>
+    ${cells.join('')}
+    <g id="fx" pointer-events="none"></g>
+    <g class="hot${G.aim?' pulse':''}" data-mgo="rocket" role="button" tabindex="0" aria-label="Cat rocket: ${G.rocket} left" ${G.rocket?'':'opacity=".35"'}>
+      <rect x="25" y="${GY+GN*GS+12}" width="170" height="42" rx="21" fill="${G.aim?'#f3a3c6':'#fff'}" ${K}/>
+      <g transform="translate(54,${GY+GN*GS+34}) rotate(45)">${ROCKET}</g>
+      <text x="120" y="${GY+GN*GS+40}" text-anchor="middle" class="tab" style="font-size:16px">ROCKET ×${G.rocket}</text></g>
+    <g class="hot" data-mgo="restart" role="button" tabindex="0" aria-label="Start this level again">
+      <rect x="205" y="${GY+GN*GS+12}" width="170" height="42" rx="21" fill="#fff" ${K}/><text x="290" y="${GY+GN*GS+40}" text-anchor="middle" class="tab" style="font-size:16px">NEW CATS</text></g>
+    ${G.won?`<g><rect x="40" y="200" width="320" height="190" rx="18" fill="#fffaf6" stroke="#e0508a" stroke-width="4"/>
+      <text x="200" y="250" text-anchor="middle" class="ttl">All the cats are free!</text>
+      <text x="200" y="285" text-anchor="middle" class="tab" style="font-size:18px">+10 COINS IN THE CHEST</text>
+      <g class="hot pulse" data-mgo="nextlv" role="button" tabindex="0" aria-label="Next level"><rect x="110" y="310" width="180" height="56" rx="28" fill="#f3a3c6" ${K}/><text x="200" y="345" text-anchor="middle" class="tab" style="font-size:20px">NEXT LEVEL</text></g></g>`:''}`;
+}
+const ROCKET=`<path d="M0,-18 Q10,-8 8,10 H-8 Q-10,-8 0,-18Z" fill="#e0508a" stroke="${INK}" stroke-width="2"/><path d="M-6,-12 L-11,-17 L-5,-8 M6,-12 L11,-17 L5,-8" fill="#e0508a" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round"/>
+  <circle cx="0" cy="-3" r="3.5" fill="#7cc6f0" stroke="${INK}" stroke-width="1.4"/><path d="M-8,10 L-12,16 L-4,12 M8,10 L12,16 L4,12" fill="#ffd34d" stroke="${INK}" stroke-width="1.6"/><path d="M-4,12 L0,22 L4,12Z" fill="#f5891f"/>`;
+const later=ms=>new Promise(r=>setTimeout(r,ms));
+function coinFx(n,x,y){
+  const fx=$('#fx');if(!fx)return;
+  fx.insertAdjacentHTML('beforeend',`<g transform="translate(${x},${y})"><g class="tochest" style="--tx:${318-x}px;--ty:${76-y}px"><circle r="9" fill="#ffd34d" stroke="${INK}" stroke-width="2"/><text y="4.5" text-anchor="middle" class="tab" style="font-size:11px">C</text></g></g>`);
+  G.coins+=n;saveMatch();setTimeout(()=>{const t=$('#coinCount');t&&(t.textContent=G.coins);const ch=$('#chest');ch&&restartClass(ch,'pop',300)},900);
+}
+// break the ice in these cells: the frozen cat jumps out and gives coins
+function breakIce(cells){
+  let n=0;for(const i of cells){const r=Math.floor(i/GN),c=i%GN;if(G.ice[r][c]){G.ice[r][c]=false;n++;G.freed++;
+    coinFx(3,GX+c*GS+GS/2,GY+r*GS+GS/2)}}
+  if(n){sfx.crack();say(n>1?`Crack! ${n} cats are free! Meow!`:'Crack! A cat is free! Meow!',`${G.ice.flat().filter(Boolean).length} cats still in ice.`)}
+  return n;
+}
+async function resolve(first){
+  let chain=0;
+  while(true){
+    const hit=first||findMatches();first=null;if(!hit.size)break;chain++;
+    // a match breaks the ice on its own cells and right next to them
+    const near=new Set(hit);hit.forEach(i=>{const r=Math.floor(i/GN),c=i%GN;[[1,0],[-1,0],[0,1],[0,-1]].forEach(([dr,dc])=>{const r2=r+dr,c2=c+dc;if(r2>=0&&r2<GN&&c2>=0&&c2<GN)near.add(r2*GN+c2)})});
+    const iced=[...near].filter(i=>G.ice[Math.floor(i/GN)][i%GN]);
+    hit.forEach(i=>{if(!G.ice[Math.floor(i/GN)][i%GN])G.grid[Math.floor(i/GN)][i%GN]=-1});
+    iced.forEach(i=>{G.grid[Math.floor(i/GN)][i%GN]=-1});
+    breakIce(iced);
+    if(chain>1)sfx.chime(chain);else sfx.pop();
+    matchScreen();await later(220);
+    // fall down, and new cats drop in from the top
+    for(let c=0;c<GN;c++){
+      for(let r=GN-1;r>=0;r--){if(G.grid[r][c]>=0||G.ice[r][c])continue;
+        let k=r-1;while(k>=0&&(G.grid[k][c]<0||G.ice[k][c]))k--;
+        if(k>=0&&!G.ice[k][c]){G.grid[r][c]=G.grid[k][c];G.grid[k][c]=-1;G.drop[r*GN+c]=r-k}}
+      let miss=0;for(let r=0;r<GN;r++)if(G.grid[r][c]<0&&!G.ice[r][c])miss++;
+      for(let r=0;r<GN;r++)if(G.grid[r][c]<0&&!G.ice[r][c]){G.grid[r][c]=rnd();G.drop[r*GN+c]=miss+1}
+      for(let r=0;r<GN;r++)if(G.grid[r][c]<0)G.grid[r][c]=rnd(); // a freed ice cell gets a new cat
+    }
+    matchScreen();await later(300);
+  }
+  if(!G.ice.flat().some(Boolean)&&!G.won){G.won=true;G.coins+=10;saveMatch();matchScreen();sfx.tada();hearts(8);
+    say(`Level ${G.lv} done! All the cats are free. Ten coins go in the treasure chest!`,'Tap NEXT LEVEL.');return}
+  if(!hasMove()){say('No more moves! Mixing up the cats…','');await later(600);
+    const free=[];for(let r=0;r<GN;r++)for(let c=0;c<GN;c++)if(!G.ice[r][c])free.push(G.grid[r][c]);
+    let tries=0;do{const s=shuffle(free);let k=0;for(let r=0;r<GN;r++)for(let c=0;c<GN;c++)if(!G.ice[r][c])G.grid[r][c]=s[k++];tries++}while((findMatches().size||!hasMove())&&tries<50);
+    matchScreen()}
+}
+async function trySwap(a,b){
+  if(G.busy)return;
+  if(G.ice[a[0]][a[1]]||G.ice[b[0]][b[1]]){sfx.meow();say('That cat is frozen in ice! Make a match next to it to break the ice.','');G.sel=null;matchScreen();return}
+  G.busy=true;G.sel=null;swapCells(a,b);sfx.swish();
+  const hit=findMatches();
+  if(!hit.size){matchScreen();await later(260);swapCells(a,b);matchScreen();say('No match there. Try another swap!','Line up three cats of the same colour.');G.busy=false;return}
+  matchScreen();await later(120);
+  await resolve(hit);G.busy=false;
+}
+async function fireRocket(r,c){
+  if(G.busy)return;G.busy=true;G.aim=false;G.rocket=0;
+  const x=GX+c*GS+GS/2,y=GY+r*GS+GS/2,fx=$('#fx');
+  fx.insertAdjacentHTML('beforeend',`<g transform="translate(${x},${y})"><g class="flyin" style="--fx:${54-x}px;--fy:${GY+GN*GS+34-y}px">${ROCKET}</g></g>`);
+  sfx.whoosh();await later(600);
+  const blast=new Set();for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const r2=r+dr,c2=c+dc;if(r2>=0&&r2<GN&&c2>=0&&c2<GN)blast.add(r2*GN+c2)}
+  sfx.boom();
+  const iced=[...blast].filter(i=>G.ice[Math.floor(i/GN)][i%GN]);
+  blast.forEach(i=>{G.grid[Math.floor(i/GN)][i%GN]=-1});
+  matchScreen();
+  $('#fx').insertAdjacentHTML('beforeend',`<g transform="translate(${x},${y})"><g class="pop"><path d="${starPath(0,0,62)}" fill="#ffd34d" stroke="#f5891f" stroke-width="4" opacity=".9"/><text y="8" text-anchor="middle" class="ttl" style="fill:#d8243c">BOOM!</text></g></g>`);
+  breakIce(iced);await later(500);
+  // treat the blast like a match that has already been cleared
+  for(let c2=0;c2<GN;c2++){for(let rr=GN-1;rr>=0;rr--){if(G.grid[rr][c2]>=0||G.ice[rr][c2])continue;let k=rr-1;while(k>=0&&(G.grid[k][c2]<0||G.ice[k][c2]))k--;if(k>=0){G.grid[rr][c2]=G.grid[k][c2];G.grid[k][c2]=-1;G.drop[rr*GN+c2]=rr-k}}
+    for(let rr=0;rr<GN;rr++)if(G.grid[rr][c2]<0){G.grid[rr][c2]=rnd();G.drop[rr*GN+c2]=2}}
+  matchScreen();await later(300);await resolve();G.busy=false;
+}
+function cellAct(r,c){
+  if(G.won||G.busy)return;
+  if(G.aim){fireRocket(r,c);return}
+  if(!G.sel){if(G.ice[r][c]){sfx.meow();say('Brrr! That cat is frozen in an ice cube.','Make a match next to it to break the ice.');return}
+    G.sel=[r,c];sfx.tap();matchScreen();return}
+  const[sr,sc]=G.sel;
+  if(sr===r&&sc===c){G.sel=null;matchScreen();return}
+  if(Math.abs(sr-r)+Math.abs(sc-c)===1){trySwap([sr,sc],[r,c]);return}
+  if(G.ice[r][c]){sfx.meow();return}
+  G.sel=[r,c];sfx.tap();matchScreen();
+}
+// swiping a cat also swaps it
+let swipe=null;
+stage.addEventListener('pointerdown',e=>{if(S.screen!=='heads')return;const el=e.target.closest('[data-cell]');if(!el)return;swipe={cell:el.dataset.cell.split(',').map(Number),p:stagePt(e)}});
+stage.addEventListener('pointerup',e=>{if(S.screen!=='heads'||!swipe)return;const s=swipe;swipe=null;const p=stagePt(e),dx=p.x-s.p.x,dy=p.y-s.p.y;
+  if(Math.max(Math.abs(dx),Math.abs(dy))<GS*.45||G.aim)return;
+  const[r,c]=s.cell,t=Math.abs(dx)>Math.abs(dy)?[r,c+Math.sign(dx)]:[r+Math.sign(dy),c];
+  if(t[0]<0||t[0]>=GN||t[1]<0||t[1]>=GN)return;G.swiped=true;trySwap([r,c],t)});
+function matchAct(el){
+  if(el.dataset.cell!==undefined){if(G.swiped){G.swiped=false;return true}const[r,c]=el.dataset.cell.split(',').map(Number);cellAct(r,c);return true}
+  const g=el.dataset.mgo;if(!g)return false;
+  if(g==='rocket'){if(G.busy||G.won)return true;if(!G.rocket){say('The cat rocket is used up. You get a new one next level.','');return true}
+    G.aim=!G.aim;G.sel=null;sfx.tap();matchScreen();say(G.aim?'The cat rocket! Tap where to throw it. Boom!':'Rocket put away.',G.aim?'Aim at the ice cubes.':'');return true}
+  if(g==='chest'){sfx.coin();const ch=$('#chest');ch&&restartClass(ch,'wiggle',900);say(`The treasure chest has ${G.coins} coins inside. Like a piggy bank!`,'Free more cats to get more coins.');return true}
+  if(g==='restart'){if(G.busy)return true;sfx.swish();newLevel();matchScreen();say(`Level ${G.lv}, with new cats.`,'Free the cats in the ice cubes.');return true}
+  if(g==='nextlv'){sfx.tap();G.lv++;saveMatch();newLevel();matchScreen();say(`Level ${G.lv}! ${G.total} cats are stuck in ice cubes.`,'Make matches next to them to set them free.');return true}
+  return false;
+}
+function startMatch(){newLevel();matchScreen();say(`Lots of cats! Level ${G.lv}. ${G.total} cats are stuck in ice cubes. Set them free!`,'Tap a cat, then a cat next to it, to swap them. Line up three of the same colour.')}
+
 /* ---------- moving between screens ---------- */
 function show(screen){
-  S.screen=screen;musicStop();stage.classList.remove('drawing');
+  S.screen=screen;musicStop();bedStop();stage.classList.remove('drawing');
   if(screen==='home'){homeScreen();say('Pick a game! These games are by Carolina.','Tap a box to play.')}
   else if(screen==='craft'){craftScreen();say('Craft with a cat! Here is a big empty piece of paper.','Pick PEN, PAWS or SPLAT, and a colour from the bottom. Then tap the paper.')}
   else if(screen==='music'){musicScreen();say('Make music with a cat! Play the piano, the drum and the cat guitar.','Tap DJ CATNIP for music, and the dance floor to dance.')}
   else if(screen==='cook'){CK.page=Math.min(1,Math.floor(Math.min(CK.done,RECIPES.length-1)/PER_PAGE));bookScreen();say('Cook with a cat! Here is the recipe book.','Tap a recipe with COOK! Cook one to open the next.')}
+  else if(screen==='sleep'){B.pg=Math.min(B.pg,B.pages.length-1);storyScreen();say('Sleep time! Let us make a bedtime story with the cat.','Draw a picture, and type or say the words. Then tap READ IT TO ME.')}
+  else if(screen==='heads'){startMatch()}
   else if(screen==='help'){S.mood='ache';startHelp()}
   else if(screen==='dress'){S.mood='normal';dressScreen();say('Dress up the cat! What will the cat wear today?','Tap DRESS, SHOES, T-SHIRT or TROUSERS, then pick something from the shelf.')}
 }
@@ -922,6 +1257,8 @@ function act(el){
   if(el.dataset.colour!==undefined){sfx.tap();C.colour=+el.dataset.colour;if(C.tool==='undo')C.tool='pen';craftScreen();saveCraft();say(COLOUR_NAMES[C.colour]+'!','Now tap the paper.');return}
   if(S.screen==='music'&&musicAct(el))return;
   if(S.screen==='cook'&&cookAct(el))return;
+  if(S.screen==='sleep'&&bedAct(el))return;
+  if(S.screen==='heads'&&matchAct(el))return;
   if(el.dataset.tool!==undefined){sfx.tap();const t=el.dataset.tool;H.tool=H.tool===t?null:t;if(H.done)H.tool=null;helpScreen();
     if(H.done)say(`${H.pat.name} is all better now!`,'Tap NEXT PATIENT, or OTHER GAMES.');
     else if(H.tool)say(`The ${TOOL(H.tool).name.toLowerCase()}.`,toolHint());else say('No tool.','Pick a tool from the side.');return}
