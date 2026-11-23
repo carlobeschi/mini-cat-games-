@@ -90,6 +90,45 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(1.4rem,7vw,1.8rem)
 .drip{animation:drip .7s ease-in both}
 @keyframes drip{0%{transform:translateY(0);opacity:1}100%{transform:translateY(60px);opacity:0}}
 .pulse{animation:none}}
+
+/* players: who is playing, a new player and the player menu sit on paper over the stage (as in You Are a Cat) */
+.chips{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+header h1{white-space:nowrap}
+.chip.who{background:var(--pink);max-width:8em;overflow:hidden;text-overflow:ellipsis}
+.frame{position:relative}
+.ov{position:absolute;inset:8px;background:var(--paper);border:2.5px solid var(--ink);border-radius:14px;overflow:auto;padding:clamp(8px,3vw,14px) clamp(8px,3vw,14px) 16px;display:flex;flex-direction:column;align-items:stretch;gap:10px;text-align:center;font-family:var(--display);color:var(--pen)}
+.ov[hidden]{display:none}
+.ov>*{flex:none}
+.ov h2{font-family:var(--display);font-weight:400;font-size:clamp(1.45rem,7vw,1.9rem);line-height:1.05;margin:4px 0 0;color:var(--hot);text-wrap:balance}
+.ov p{margin:0;font-size:clamp(1rem,4.6vw,1.25rem);letter-spacing:.04em;text-transform:uppercase}
+.ov p.small{font-size:1rem;color:var(--hot)}
+.ov button{font-family:var(--display);color:var(--ink);cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.ov button:focus-visible,.ov input:focus-visible{outline:3px dashed var(--hot);outline-offset:2px}
+.big{min-height:54px;border:2.5px solid var(--ink);border-radius:18px;background:#fff;font-size:clamp(1.2rem,6vw,1.6rem);letter-spacing:.04em;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:8px;padding:4px 10px;box-shadow:0 4px 0 var(--ink)}
+.big:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.big.pink{background:var(--pink)}.big.blue{background:#9fd0ef}.big.green{background:#c9e6a8}
+.big.small{min-height:46px;font-size:clamp(1rem,4.6vw,1.25rem)}
+.cats{display:flex;flex-direction:column;gap:10px}
+.card{position:relative;display:flex}
+.card .pick{flex:1;min-width:0;justify-content:flex-start;text-align:left;padding-right:50px}
+.card .pick>span{min-width:0}
+.card .x{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:2.5px solid var(--ink);background:var(--paper);font-size:1.5rem;line-height:1;color:var(--ink)}
+.mini{width:clamp(38px,12vw,52px);height:clamp(48px,15vw,64px);flex:none}
+.nameRow{display:flex;align-items:center;gap:8px}
+#newCat .mini{width:48px;height:60px;display:block}
+.nm{display:block;font-size:clamp(1.3rem,6vw,1.7rem);line-height:1;overflow:hidden;text-overflow:ellipsis}
+.meta{display:block;white-space:nowrap;font-size:1.05rem;color:var(--pen);font-family:var(--body);letter-spacing:.05em}
+.menuTop{display:flex;align-items:center;gap:12px;text-align:left}
+.menuTop>div{flex:1;min-width:0}
+.menuTop h2{margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ov input{box-sizing:border-box;font-family:var(--display);font-size:1.8rem;text-align:center;text-transform:uppercase;letter-spacing:.06em;border:2.5px solid var(--ink);border-radius:14px;padding:6px 10px;background:#fff;color:var(--hot);width:100%;min-width:0}
+.ov input::placeholder{color:#e8c3d4}
+.ages{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.ages button{border:2.5px solid var(--ink);border-radius:999px;background:#fff;font-size:1.35rem;padding:2px 6px;min-height:46px}
+.ages button[aria-pressed=true],.furs button[aria-pressed=true]{background:var(--pink);box-shadow:0 0 0 3px var(--hot)}
+.furs{display:flex;gap:5px;justify-content:center;flex-wrap:wrap}
+.furs button{border:2.5px solid var(--ink);border-radius:999px;background:#fff;min-height:44px;min-width:42px;padding:4px;display:flex;gap:3px;align-items:center;justify-content:center}
+.furs span{width:14px;height:22px;border-radius:7px;border:2px solid var(--ink)}
 </style>
 </head>
 <body>
@@ -99,10 +138,11 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(1.4rem,7vw,1.8rem)
       <h1>Cat Mini Games</h1>
       <div class="by">Games by Carolina</div>
     </div>
-    <button class="chip" id="soundBtn" type="button" aria-pressed="true">SOUND ON</button>
+    <div class="chips"><button class="chip who" id="whoBtn" type="button" hidden></button><button class="chip" id="soundBtn" type="button" aria-pressed="true">SOUND ON</button></div>
   </header>
   <div class="frame">
     <svg id="stage" viewBox="0 0 400 520" role="group" aria-label="Cat mini games"></svg>
+    <div class="ov" id="ov" hidden></div>
   </div>
   <div class="story" aria-live="polite">
     <p id="story"></p>
@@ -228,13 +268,158 @@ function catSVG(w={},m='normal',p=PINK){
   ${wear('nose')}${wear('hat')}`;
 }
 const DEFS=`<defs><clipPath id="catClip"><path d="${BODY}"/></clipPath></defs>`;
+</script>
+
+<script>
+'use strict';
+/* ---------- players: who is playing? ----------
+   Like "You Are a Cat": pick your player or make a new one, with your age. Every player has their own
+   saves on this device (clothes, drawings, recipes, coins, levels…), and the games get easier or harder with age. */
+const PLAYERS_KEY='catPlayers', MAXPLAYERS=8;
+// every save the games make; each player keeps their own copy, named like catCook@<player id>
+const SAVE_KEYS=['catMiniGames','catCraft','catCook','catStory','catMatch','catPaths','catGarden','catCafe','catHide','catHouse','catDance','catKitten'];
+const AGES=[3,4,5,6,7,8,9,10];
+const ageName=a=>a>=10?'10+':String(a);
+// the colour of each player's cat, so little ones who can't read yet can find their own
+const PFURS=[{head:'#a8652f',body:'#f3a3c6',ear:'#f1e05a'},{head:'#8d8d9a',body:'#d3d4dc',ear:'#f3a3c6'},{head:'#f5891f',body:'#ffd34d',ear:'#f3a3c6'},
+  {head:'#3a3346',body:'#fff',ear:'#f3a3c6'},{head:'#7cc6f0',body:'#c9a6ef',ear:'#fff'},{head:'#1f8a4c',body:'#9ccf6b',ear:'#ffd34d'}];
+let PDB={players:[],moved:false};
+try{const v=JSON.parse(localStorage.getItem(PLAYERS_KEY)||'null');if(v&&Array.isArray(v.players))PDB={players:v.players.filter(p=>p&&p.id&&p.name),moved:!!v.moved}}catch(e){}
+function storePlayers(){try{localStorage.setItem(PLAYERS_KEY,JSON.stringify(PDB))}catch(e){}}
+// the player for this visit (a refresh keeps them; a new visit asks again)
+let PLAYER=null;
+try{const id=sessionStorage.getItem('catPlayerNow');PLAYER=PDB.players.find(p=>p.id===id)||null}catch(e){}
+const PKEY=k=>PLAYER?k+'@'+PLAYER.id:k;
+// how hard the games are: 0 for ages 3-4, 1 for 5-6, 2 for 7-8, 3 for 9 and up
+const LVL=()=>{const a=PLAYER?PLAYER.age:6;return a<=4?0:a<=6?1:a<=8?2:3};
+const BY_AGE=(a,b,c,d)=>[a,b,c,d][LVL()];
+
+const ov=document.getElementById('ov'), whoBtn=document.getElementById('whoBtn');
+const escH=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
+const pload=(p,k)=>{try{return JSON.parse(localStorage.getItem(k+'@'+p.id)||'null')}catch(e){return null}};
+function wearOf(p){
+  const w=Object.assign({},(pload(p,'catMiniGames')||{}).wear||{});
+  for(const k in w){if(!CAT_OF(k)||!itemOf(k,w[k]))delete w[k]}
+  return w;
+}
+const miniCat=(p,m='happy',fur)=>`<svg class="mini" viewBox="-60 -200 120 206" aria-hidden="true">${catSVG(p?wearOf(p):{},m,PFURS[(fur!=null?fur:p&&p.fur)||0]||PFURS[0])}</svg>`;
+function metaOf(p){
+  const m=pload(p,'catMatch'),c=pload(p,'catCook'),bits=[`AGE ${ageName(p.age)}`];
+  if(m&&m.coins)bits.push(`${m.coins} COINS`);
+  if(c&&c.done)bits.push(`${c.done} ${c.done>1?'RECIPES':'RECIPE'}`);
+  return bits.join(' · ');
+}
+function pSpeak(t){try{if(!window.speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=.85;u.pitch=1.3;u.volume=.85;speechSynthesis.speak(u)}catch(e){}}
+function openOv(html,story,hint){
+  ov.innerHTML=html;ov.hidden=false;ov.scrollTop=0;
+  document.getElementById('story').textContent=story;document.getElementById('hint').textContent=hint||'';
+  const f=ov.querySelector('[data-focus]');f&&f.focus({preventScroll:true});
+}
+function closeOv(){ov.hidden=true;ov.innerHTML=''}
+const ageRow=a=>`<div class="ages">${AGES.map(n=>`<button data-a="age" data-n="${n}" aria-pressed="${n===a}" aria-label="${ageName(n)} years old">${ageName(n)}</button>`).join('')}</div>`;
+
+function showWho(){
+  if(!PDB.players.length){showNew();return}
+  const ps=[...PDB.players].sort((a,b)=>(b.at||0)-(a.at||0));
+  openOv(`<h2>Who is playing?</h2>
+    <div class="cats">${ps.map(p=>`<div class="card"><button class="big pick" data-a="play" data-id="${escH(p.id)}">${miniCat(p)}<span><span class="nm">${escH(p.name)}</span><span class="meta">${metaOf(p)}</span></span></button>
+      <button class="x" data-a="del" data-id="${escH(p.id)}" aria-label="Say bye-bye to ${escH(p.name)}">×</button></div>`).join('')}</div>
+    ${PDB.players.length<MAXPLAYERS?`<button class="big small green" data-a="new">+ NEW PLAYER</button>`:''}`,
+    'Who is playing today?','Tap your cat to play');
+}
+let NEWP={age:5,fur:0};
+function showNew(){
+  NEWP={age:5,fur:PDB.players.length%PFURS.length};
+  openOv(`<h2>What is your name?</h2>
+    <div class="nameRow"><div id="newCat">${miniCat(null,'happy',NEWP.fur)}</div><input id="nameIn" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Your name" placeholder="NAME"></div>
+    <p>HOW OLD ARE YOU?</p>${ageRow(NEWP.age)}
+    <p>PICK YOUR CAT</p>
+    <div class="furs">${PFURS.map((f,i)=>`<button data-a="fur" data-n="${i}" aria-pressed="${i===NEWP.fur}" aria-label="Cat colour ${i+1}"><span style="background:${f.head}"></span><span style="background:${f.body}"></span></button>`).join('')}</div>
+    <button class="big pink" data-a="go">GO! ▶</button>
+    ${PDB.players.length?`<button class="big small" data-a="who">← BACK</button>`:''}`,
+    'Hello! What is your name, and how old are you?','Type your name, tap your age, then tap GO!');
+  setTimeout(()=>{const i=document.getElementById('nameIn');i&&i.focus({preventScroll:true})},50);
+}
+function showMenu(){
+  const p=PLAYER;if(!p){showWho();return}
+  openOv(`<div class="menuTop">${miniCat(p)}<div><h2>${escH(p.name)}</h2><p>${metaOf(p)}</p></div></div>
+    <button class="big pink" data-a="close" data-focus>▶ KEEP PLAYING</button>
+    <p>HOW OLD ARE YOU?</p>${ageRow(p.age)}
+    <p class="small">The games get harder for bigger kids</p>
+    <button class="big blue" data-a="change">CHANGE PLAYER</button>`,
+    `Paws! ${p.name} is playing.`,'Tap KEEP PLAYING to go back to the game');
+}
+let DELID=null;
+function confirmDel(id){
+  const p=PDB.players.find(x=>x.id===id);if(!p)return;DELID=id;
+  openOv(`${miniCat(p,'ache').replace('class="mini"','class="mini" style="align-self:center"')}
+    <h2>Say bye-bye to ${escH(p.name)}?</h2><p>All of ${escH(p.name)}'s games will be gone</p>
+    <button class="big pink" data-a="who" data-focus>NO, KEEP IT!</button>
+    <button class="big small" data-a="yes">YES</button>`,`Say bye-bye to ${p.name}?`,'');
+}
+let BOOTED=false;
+function boot(){
+  if(BOOTED)return;BOOTED=true;
+  const s=document.createElement('script');s.textContent=document.getElementById('gameCode').textContent;document.body.appendChild(s);
+}
+function updateWho(){if(PLAYER){whoBtn.hidden=false;whoBtn.textContent=PLAYER.name;whoBtn.setAttribute('aria-label',`${PLAYER.name} is playing. Open the player menu`)}}
+function startPlayer(p,fresh){
+  p.at=Date.now();storePlayers();
+  try{sessionStorage.setItem('catPlayerNow',p.id)}catch(e){}
+  if(BOOTED){location.reload();return}
+  PLAYER=p;closeOv();boot();updateWho();
+  say(fresh?`Hello ${p.name}! Pick a game!`:`Welcome back, ${p.name}! Pick a game!`,'Tap a box to play.');
+}
+function newPlayer(name,age,fur){
+  const p={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name,age,fur,at:Date.now()};
+  // the very first player keeps what was played before players existed
+  if(!PDB.moved){SAVE_KEYS.forEach(k=>{try{const v=localStorage.getItem(k);if(v!==null)localStorage.setItem(k+'@'+p.id,v)}catch(e){}});PDB.moved=true}
+  PDB.players.push(p);startPlayer(p,true);
+}
+ov.addEventListener('click',e=>{
+  const b=e.target.closest('button[data-a]');if(!b)return;
+  const a=b.dataset.a,id=b.dataset.id;
+  if(a==='play'){const p=PDB.players.find(x=>x.id===id);p&&startPlayer(p)}
+  else if(a==='new')showNew();
+  else if(a==='who')showWho();
+  else if(a==='del')confirmDel(id);
+  else if(a==='yes'){
+    PDB.players=PDB.players.filter(x=>x.id!==DELID);
+    SAVE_KEYS.forEach(k=>{try{localStorage.removeItem(k+'@'+DELID)}catch(e){}});storePlayers();showWho();
+  }
+  else if(a==='age'){
+    const n=+b.dataset.n;ov.querySelectorAll('[data-a="age"]').forEach(x=>x.setAttribute('aria-pressed',x===b));
+    pSpeak(`${n>=10?'10 or more':n} years old`);
+    if(ov.querySelector('#nameIn'))NEWP.age=n;
+    else if(PLAYER){PLAYER.age=n;storePlayers();const m=ov.querySelector('.menuTop p');m&&(m.textContent=metaOf(PLAYER))}
+  }
+  else if(a==='fur'){
+    NEWP.fur=+b.dataset.n;ov.querySelectorAll('[data-a="fur"]').forEach(x=>x.setAttribute('aria-pressed',x===b));
+    document.getElementById('newCat').innerHTML=miniCat(null,'happy',NEWP.fur);
+  }
+  else if(a==='go'){
+    const v=(document.getElementById('nameIn').value||'').trim().toUpperCase().replace(/\s+/g,' ').slice(0,12);
+    if(!v){const i=document.getElementById('nameIn');i.focus();document.getElementById('hint').textContent='Type your name first!';pSpeak('What is your name?');return}
+    newPlayer(v,NEWP.age,NEWP.fur);
+  }
+  else if(a==='close'){closeOv();say(`Back to the game, ${PLAYER.name}!`,'')}
+  else if(a==='change'){try{sessionStorage.removeItem('catPlayerNow')}catch(e){}location.reload()}
+});
+ov.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='nameIn'){e.preventDefault();ov.querySelector('[data-a="go"]').click()}});
+whoBtn.addEventListener('click',()=>{if(ov.hidden)showMenu();else if(PLAYER&&BOOTED)ov.querySelector('[data-a="close"]')?.click()});
+if(PLAYER){boot();updateWho()}else showWho();
+</script>
+
+<!-- the games start once we know who is playing -->
+<script type="text/plain" id="gameCode">
+'use strict';
 
 /* ---------- state, saved on this device ---------- */
 const S={screen:'home',tab:'dress',wear:{},sound:true,busy:false};
-try{const d=JSON.parse(localStorage.getItem('catMiniGames')||'{}');if(d.wear)S.wear=d.wear;if(d.sound===false)S.sound=false}catch(e){}
+try{const d=JSON.parse(localStorage.getItem(PKEY('catMiniGames'))||'{}');if(d.wear)S.wear=d.wear;if(d.sound===false)S.sound=false}catch(e){}
 // drop anything saved that no longer exists in the wardrobe
 for(const k in S.wear){if(!CAT_OF(k)||!itemOf(k,S.wear[k]))delete S.wear[k]}
-function save(){try{localStorage.setItem('catMiniGames',JSON.stringify({wear:S.wear,sound:S.sound}))}catch(e){}}
+function save(){try{localStorage.setItem(PKEY('catMiniGames'),JSON.stringify({wear:S.wear,sound:S.sound}))}catch(e){}}
 
 /* ---------- sound and reading aloud ---------- */
 let AC=null;
@@ -433,9 +618,12 @@ function newPatient(){
   const prev=H.pat;H.pat=pick(PATIENTS.filter(x=>x!==prev));
   // something you can see, something hidden inside, and sometimes a cold
   const seen=pick(['spikes','spikes','scratch']),inside=pick(['bone','heart']);
-  const list=[seen,inside];if(Math.random()<.5)list.push(seen==='spikes'?'cold':pick(['cold','spikes']));
+  // how many things are wrong depends on the player's age: one or two for little ones, always three for big kids
+  const L=LVL(),list=[seen];
+  if(L>0||Math.random()<.5)list.push(inside);
+  if(L===3||(L===2&&Math.random()<.6)||(L===1&&Math.random()<.3))list.push(seen==='spikes'?'cold':pick(['cold','spikes']));
   H.probs=list.map(t=>({t,fixed:false,found:t!=='bone'&&t!=='heart',
-    spikes:t==='spikes'?shuffle(SPIKE_SPOTS).slice(0,3+Math.floor(Math.random()*2)):null,
+    spikes:t==='spikes'?shuffle(SPIKE_SPOTS).slice(0,BY_AGE(2,3,3,4)+Math.floor(Math.random()*2)):null,
     limb:t==='bone'?pick(['arm','leg']):null}));
   H.tool=null;H.xray=false;H.done=false;
 }
@@ -613,8 +801,8 @@ const SPLAT=()=>{let d='';const n=11;for(let i=0;i<=n;i++){const a=i/n*Math.PI*2
   return `<path d="${d}Z" stroke-linejoin="round"/>${drops}`};
 const PAPER={x:16,y:66,w:368,h:330};
 const C={tool:'pen',colour:0,marks:[],drawing:null};
-try{const d=JSON.parse(localStorage.getItem('catCraft')||'null');if(d&&Array.isArray(d.marks))C.marks=d.marks.slice(-400);if(d&&d.colour>=0)C.colour=d.colour%COLOURS.length}catch(e){}
-function saveCraft(){try{localStorage.setItem('catCraft',JSON.stringify({marks:C.marks.slice(-400),colour:C.colour}))}catch(e){}}
+try{const d=JSON.parse(localStorage.getItem(PKEY('catCraft'))||'null');if(d&&Array.isArray(d.marks))C.marks=d.marks.slice(-400);if(d&&d.colour>=0)C.colour=d.colour%COLOURS.length}catch(e){}
+function saveCraft(){try{localStorage.setItem(PKEY('catCraft'),JSON.stringify({marks:C.marks.slice(-400),colour:C.colour}))}catch(e){}}
 function markSVG(m){
   if(m.k==='pen')return `<path d="${m.d}" fill="none" stroke="${m.c}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>`;
   if(m.k==='paw')return `<g transform="translate(${m.x},${m.y}) rotate(${m.r}) scale(1.3)" fill="${m.c}">${PAW}</g>`;
@@ -826,8 +1014,8 @@ const RECIPES=[
 ];
 const PER_PAGE=6;
 const CK={page:0,done:0,r:null,added:[],stirs:0,step:'book',shelf:[]};
-try{const d=JSON.parse(localStorage.getItem('catCook')||'null');if(d&&d.done>=0)CK.done=Math.min(d.done,RECIPES.length)}catch(e){}
-function saveCook(){try{localStorage.setItem('catCook',JSON.stringify({done:CK.done}))}catch(e){}}
+try{const d=JSON.parse(localStorage.getItem(PKEY('catCook'))||'null');if(d&&d.done>=0)CK.done=Math.min(d.done,RECIPES.length)}catch(e){}
+function saveCook(){try{localStorage.setItem(PKEY('catCook'),JSON.stringify({done:CK.done}))}catch(e){}}
 const padlock=(x,y,s=1)=>`<g transform="translate(${x},${y}) scale(${s})"><path d="M-8,-4 V-10 A8,8 0 0 1 8,-10 V-4" fill="none" stroke="${INK}" stroke-width="3.5"/><rect x="-12" y="-5" width="24" height="20" rx="4" fill="#d6ad45" ${K} stroke-width="2.4"/><circle cx="0" cy="3" r="2.6" fill="${INK}"/><path d="M0,4 v6" stroke="${INK}" stroke-width="2.6" stroke-linecap="round"/></g>`;
 function bookScreen(){
   CK.step='book';
@@ -863,7 +1051,7 @@ function openRecipe(i){
   if(!pageOpen){sfx.meow();say('Page 2 is locked. You need to complete page 1 first!','Cook all the recipes on page 1.');return}
   if(i>CK.done){sfx.meow();say(`That recipe is locked. Cook recipe ${CK.done+1} first, then this one opens.`,'Tap a recipe with COOK!');return}
   sfx.tap();CK.r=i;CK.added=[];CK.stirs=0;CK.step='add';
-  const r=RECIPES[i],others=shuffle(Object.keys(ING).filter(k=>!r.i.includes(k))).slice(0,2);
+  const r=RECIPES[i],others=shuffle(Object.keys(ING).filter(k=>!r.i.includes(k))).slice(0,LVL()?2:1);
   CK.shelf=shuffle(r.i.concat(others));
   kitchenScreen();
   say(`Let's make ${r.d}! We need ${ING[r.i[0]].n}, ${ING[r.i[1]].n} and ${ING[r.i[2]].n}.`,'Tap them on the shelf to put them in the bowl.');
@@ -953,8 +1141,8 @@ function cookAct(el){
    Make a little book: on each page, say the words into the microphone or type them, and draw a picture.
    Then the book is read to you (or you read it out loud yourself), and the cat goes to sleep. */
 const B={pages:[{t:'',m:[]}],pg:0,mode:'make',colour:0,drawing:null,rec:null,readPg:0,timer:null};
-try{const d=JSON.parse(localStorage.getItem('catStory')||'null');if(d&&Array.isArray(d.pages)&&d.pages.length)B.pages=d.pages.slice(0,8)}catch(e){}
-function saveStory(){try{localStorage.setItem('catStory',JSON.stringify({pages:B.pages}))}catch(e){}}
+try{const d=JSON.parse(localStorage.getItem(PKEY('catStory'))||'null');if(d&&Array.isArray(d.pages)&&d.pages.length)B.pages=d.pages.slice(0,8)}catch(e){}
+function saveStory(){try{localStorage.setItem(PKEY('catStory'),JSON.stringify({pages:B.pages}))}catch(e){}}
 const BED_COLS=['#1d1a1f','#e0508a','#2c8fd6','#1f8a4c','#ffd34d','#f5891f','#8a4fc4'];
 const PIC={x:18,y:66,w:186,h:236};
 const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -1077,8 +1265,8 @@ const MC=['#3cb8e0','#8a4fc4','#d6ad45','#d8243c','#1f4f5a'];
 const MC_NAME=['blue','purple','gold','red','dark'];
 const GN=7,GS=50,GX=25,GY=110; // grid size, cell size, top-left corner
 const G={lv:1,grid:[],ice:[],sel:null,busy:false,rocket:1,aim:false,coins:0,freed:0,total:0,won:false,drop:{}};
-try{const d=JSON.parse(localStorage.getItem('catMatch')||'null');if(d){G.coins=d.coins|0;G.lv=Math.max(1,d.lv|0)}}catch(e){}
-function saveMatch(){try{localStorage.setItem('catMatch',JSON.stringify({coins:G.coins,lv:G.lv}))}catch(e){}}
+try{const d=JSON.parse(localStorage.getItem(PKEY('catMatch'))||'null');if(d){G.coins=d.coins|0;G.lv=Math.max(1,d.lv|0)}}catch(e){}
+function saveMatch(){try{localStorage.setItem(PKEY('catMatch'),JSON.stringify({coins:G.coins,lv:G.lv}))}catch(e){}}
 function catHead(c,mark){
   const marks=[``,
     `<path d="M-4,-8 v5 M0,-9 v6 M4,-8 v5" stroke="${INK}" stroke-width="1.4" stroke-linecap="round"/>`,
@@ -1089,14 +1277,14 @@ function catHead(c,mark){
     ${marks}<circle cx="-5" cy="0" r="2" fill="${INK}"/><circle cx="5" cy="0" r="2" fill="${INK}"/><circle cx="-4.4" cy="-.7" r=".7" fill="#fff"/><circle cx="5.6" cy="-.7" r=".7" fill="#fff"/>
     <path d="M-1.6,4 H1.6 L0,5.6Z" fill="#e0508a"/><path d="M-3,7 q1.5,1.6 3,0 q1.5,1.6 3,0" fill="none" stroke="${INK}" stroke-width="1.2" stroke-linecap="round"/>`;
 }
-const nCol=()=>G.lv<3?4:5;
+const nCol=()=>LVL()===0||G.lv+LVL()<4?4:5; // little ones always have four colours; big kids get five sooner
 const rnd=()=>Math.floor(Math.random()*nCol());
 function newLevel(){
   G.grid=[];G.ice=[];G.sel=null;G.rocket=1;G.aim=false;G.won=false;G.freed=0;G.drop={};
   for(let r=0;r<GN;r++){G.grid.push([]);G.ice.push([]);for(let c=0;c<GN;c++){let v;
     do{v=rnd()}while((c>1&&G.grid[r][c-1]===v&&G.grid[r][c-2]===v)||(r>1&&G.grid[r-1][c]===v&&G.grid[r-2][c]===v));
     G.grid[r].push(v);G.ice[r].push(false)}}
-  G.total=Math.min(3+G.lv,14);
+  G.total=Math.min(BY_AGE(1,2,3,4)+G.lv,14);
   const cells=shuffle([...Array(GN*(GN-1)).keys()].map(i=>i+GN)).slice(0,G.total);
   cells.forEach(i=>{G.ice[Math.floor(i/GN)][i%GN]=true});
   if(!hasMove())newLevel();
@@ -1256,15 +1444,15 @@ function startMatch(){newLevel();matchScreen();say(`Lots of cats! Level ${G.lv}.
    Only one path ends at the gold ball; the others end in streets where dogs have pooped. Pick a path and watch the ball roll! */
 const LANES=[66,155,245,334],PTOP=150,PBOT=396;
 const P={rungs:[],gold:0,balls:5,gotGold:0,rolling:false,result:null,tried:[]};
-try{const d=JSON.parse(localStorage.getItem('catPaths')||'null');if(d)P.gotGold=d.gold|0}catch(e){}
-function savePaths(){try{localStorage.setItem('catPaths',JSON.stringify({gold:P.gotGold}))}catch(e){}}
+try{const d=JSON.parse(localStorage.getItem(PKEY('catPaths'))||'null');if(d)P.gotGold=d.gold|0}catch(e){}
+function savePaths(){try{localStorage.setItem(PKEY('catPaths'),JSON.stringify({gold:P.gotGold}))}catch(e){}}
 function newPaths(){
   // rungs join two lanes next to each other at one height; two rungs never touch the same lane at the same height
   P.rungs=[];const ys=[];for(let y=PTOP+22;y<=PBOT-22;y+=22)ys.push(y);
   for(const y of ys){const r=Math.random();
     if(r<.2)P.rungs.push({y,a:0},{y,a:2});
     else if(r<.85)P.rungs.push({y,a:Math.floor(Math.random()*3)})}
-  P.gold=Math.floor(Math.random()*4);P.balls=5;P.result=null;P.tried=[];P.used=[];
+  P.gold=Math.floor(Math.random()*4);P.balls=P.max=BY_AGE(5,3,2,2);P.result=null;P.tried=[];P.used=[];
 }
 function tracePath(lane){
   const pts=[[LANES[lane],PTOP-30],[LANES[lane],PTOP]];let l=lane;
@@ -1285,7 +1473,7 @@ function pathsScreen(){
   const starts=LANES.map((x,i)=>`<g class="hot" data-lane="${i}" role="button" tabindex="0" aria-label="Path ${i+1}">
       <circle cx="${x}" cy="${PTOP-30}" r="20" fill="${P.rolling||P.result!==null||!P.balls||P.used.includes(i)?'#efe7e0':'#fff'}" stroke="#8a4fc4" stroke-width="3"/>
       <text x="${x}" y="${PTOP-23}" text-anchor="middle" class="tab" style="font-size:18px;fill:#8a4fc4">${i+1}</text></g>`).join('');
-  const balls=Array.from({length:5},(_,i)=>`<circle cx="${36+i*25}" cy="78" r="10" fill="${i<P.balls?'#d8243c':'#f3d6d6'}" stroke="${INK}" stroke-width="2"/>`).join('');
+  const balls=Array.from({length:P.max||5},(_,i)=>`<circle cx="${36+i*25}" cy="78" r="10" fill="${i<P.balls?'#d8243c':'#f3d6d6'}" stroke="${INK}" stroke-width="2"/>`).join('');
   stage.innerHTML=DEFS+`${backBtn('ball paths')}
     <rect x="16" y="60" width="140" height="36" rx="18" fill="#fff" stroke="#d8243c" stroke-width="3"/>${balls}
     <g transform="translate(186,78)"><circle r="14" fill="#ffd34d" ${K}/><text x="22" y="6" class="tab" style="font-size:17px">${P.gotGold}</text></g>
@@ -1369,12 +1557,12 @@ function newMess(){
   W.items=[
     {k:'picture',x:290,y:150,f:1},{k:'tub',x:110,y:300,f:1},{k:'sofa',x:290,y:310,f:1},{k:'lamp',x:354,y:330,f:1},
     {k:'plant',x:40,y:400,f:1},{k:'table',x:200,y:400,f:1},{k:'rug',x:200,y:440,f:1,under:1}];
-  const junk=shuffle(Object.keys(JUNK)).slice(0,3);
+  const junk=shuffle(Object.keys(JUNK)).slice(0,BY_AGE(2,3,3,3));
   junk.forEach((k,i)=>W.items.push({k,x:90+i*110+Math.random()*30,y:360+Math.random()*70,j:1}));
   W.dirt=[];
-  for(let i=0;i<4;i++)W.dirt.push({t:'mud',x:40+Math.random()*320,y:120+Math.random()*320,r:16+Math.random()*10,v:1,s:Math.random()*360});
-  for(let i=0;i<3;i++)W.dirt.push({t:'dust',x:40+Math.random()*320,y:FLOOR_Y+30+Math.random()*80,r:18,v:1,s:0});
-  W.dirt.push({t:'web',x:28,y:72,r:30,v:1,s:0},{t:'web',x:372,y:72,r:30,v:1,s:90});
+  for(let i=0;i<BY_AGE(2,3,4,6);i++)W.dirt.push({t:'mud',x:40+Math.random()*320,y:120+Math.random()*320,r:16+Math.random()*10,v:1,s:Math.random()*360});
+  for(let i=0;i<BY_AGE(2,2,3,4);i++)W.dirt.push({t:'dust',x:40+Math.random()*320,y:FLOOR_Y+30+Math.random()*80,r:18,v:1,s:0});
+  W.dirt.push({t:'web',x:28,y:72,r:30,v:1,s:0});if(LVL())W.dirt.push({t:'web',x:372,y:72,r:30,v:1,s:90});
   W.clean=false;W.erased=0;W.tool='sponge';
 }
 function dirtSVG(d,i){
@@ -1479,8 +1667,8 @@ function xLater(fn,ms){const id=setTimeout(fn,ms);XT.push(()=>clearTimeout(id));
 function xStopAll(){XT.forEach(f=>f());XT=[];for(const k in XG)XG[k].stop&&XG[k].stop()}
 const btn=(go,x,y,w,h,label,fill='#fff',fs=15,attr='data-xgo')=>`<g class="hot" ${attr}="${go}" role="button" tabindex="0" aria-label="${label}">
   <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${Math.min(h/2,16)}" fill="${fill}" ${K}/><text x="${x+w/2}" y="${y+h/2+fs*.36}" text-anchor="middle" class="tab" style="font-size:${fs}px">${label}</text></g>`;
-function loadJSON(k,d){try{const v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch(e){return d}}
-function saveJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function loadJSON(k,d){try{const v=JSON.parse(localStorage.getItem(PKEY(k))||'null');return v==null?d:v}catch(e){return d}}
+function saveJSON(k,v){try{localStorage.setItem(PKEY(k),JSON.stringify(v))}catch(e){}}
 
 /* ---------- Garden with a cat ----------
    Five patches of soil. Plant a seed, water it until it grows into a flower (or catnip!), then pick it for the bouquet. */
@@ -1617,7 +1805,7 @@ function cafeTick(){
   // a new customer sits down on an empty seat
   const free=CF.seats.map((c,i)=>c?-1:i).filter(i=>i>=0),waiting=CF.left-CF.seats.filter(Boolean).length;
   if(free.length&&CF.left>CF.seats.filter(Boolean).length&&Math.random()<.35){const i=pick(free);
-    const speed=Math.min(.012+CF.day*.002,.03);
+    const speed=Math.min(.012+CF.day*.002,.03)*BY_AGE(.55,.75,1,1.2);
     CF.seats[i]={want:pick(MKEYS),p:1,rate:speed,p0:pick(CUST_COLS),enter:true,w:Math.random()<.4?{hat:pick(['bow','crown','sunhat','tophat'])}:{}};sfx.ding();changed=true}
   if(changed&&S.screen==='cafe')cafeScreen();
 }
@@ -1633,7 +1821,7 @@ function serve(k){
   say(pick(['Yum yum! Thank you!','Delicious! Meow!','Purr-fect!']),`+${coins} coins for the treasure chest.`);
   xLater(()=>{CF.seats[idx]=null;endCheck();if(S.screen==='cafe')cafeScreen()},1100);
 }
-function cafeStart(){CF.seats=[null,null,null];CF.served=0;CF.grumpy=0;CF.coinsToday=0;CF.left=6+CF.day*2;CF.over=false;
+function cafeStart(){CF.seats=[null,null,null];CF.served=0;CF.grumpy=0;CF.coinsToday=0;CF.left=BY_AGE(4,5,6,7)+CF.day*2;CF.over=false;
   cafeScreen();xEvery(cafeTick,400)}
 XG.cafe={start(){CF.day=loadJSON('catCafe',{day:1}).day||1;cafeStart();say('Welcome to the cat café! Customers will tell you what they want.','Tap the food they ask for, before they get grumpy.')},
   act(el){
@@ -1678,16 +1866,18 @@ function hideScreen(){
     <rect x="96" y="80" width="80" height="80" fill="#bfe6fb" stroke="${INK}" stroke-width="2.5"/><path d="M136,80 V160 M96,120 H176" stroke="${INK}" stroke-width="2.5"/>
     ${backBtn('hide and seek')}
     <text x="350" y="44" text-anchor="middle" class="tab" style="font-size:15px;fill:var(--pen)">ROUND ${HID.round}</text>
-    ${s&&!HID.found?`<g pointer-events="none">${peekArt(s,HID.round)}</g>`:''}
+    ${s&&!HID.found?`<g pointer-events="none">${peekArt(s,hideLv())}</g>`:''}
     ${SPOTS.map(sp=>`<g class="hot" data-spot="${sp.id}" role="button" tabindex="0" aria-label="Look ${sp.n}">${sp.draw()}</g>`).join('')}
     ${HID.found?`<g transform="translate(${s.hx},${s.hy+70}) scale(.6)"><g class="anim jump">${catSVG(S.wear,'happy')}</g></g><text x="${s.hx}" y="${s.hy-50}" text-anchor="middle" class="ttl" style="font-size:22px">You found me!</text>`:''}
     <g id="fx" pointer-events="none"></g>
     <text x="200" y="430" text-anchor="middle" class="lbl">${HID.found?'':'WHERE IS THE CAT?'}</text>
     ${HID.found?btn('again',110,446,180,56,'PLAY AGAIN','#f3a3c6',19):`<text x="200" y="470" text-anchor="middle" class="tab" style="font-size:14px;fill:var(--pen)">TRIES: ${HID.tries}</text>`}
-    ${!HID.found&&HID.tries>=3?btn('hint',140,480,120,32,'MEOW?','#fff',14):''}`;
+    ${!HID.found&&HID.tries>=hintAt()?btn('hint',140,480,120,32,'MEOW?','#fff',14):''}`;
 }
+const hideLv=()=>LVL()===0?Math.min(HID.round,2):HID.round+BY_AGE(0,0,1,2);
+const hintAt=()=>BY_AGE(1,2,3,3);
 function hideRound(){HID.spot=pick(SPOTS.filter(s=>s!==HID.spot));HID.tries=0;HID.found=false;HID.wrong=[];hideScreen();
-  say(HID.round===1?'Hide and seek! The cat is hiding. Can you find it?':`Round ${HID.round}! The cat is hiding even better now.`,HID.round<=2?'Look for ears or a tail peeking out.':'Look very carefully!')}
+  say(HID.round===1?'Hide and seek! The cat is hiding. Can you find it?':`Round ${HID.round}! The cat is hiding even better now.`,hideLv()<=2?'Look for ears or a tail peeking out.':'Look very carefully!')}
 XG.hide={start(){HID.round=1;HID.spot=null;hideRound()},
   act(el){
     if(el.dataset.spot!==undefined){
@@ -1695,7 +1885,7 @@ XG.hide={start(){HID.round=1;HID.spot=null;hideRound()},
       if(sp===HID.spot){HID.found=true;if(HID.round>HID.best){HID.best=HID.round;saveJSON('catHide',{rounds:HID.best})}
         hideScreen();sfx.meow();sfx.tada();hearts(6);say(`Boo! The cat was ${sp.n}! You found it in ${HID.tries} ${HID.tries>1?'tries':'try'}.`,'Tap PLAY AGAIN. Next time it hides better!');return true}
       sfx.tap();restartClass(el,'wiggle',900);el.style.transformBox='fill-box';el.style.transformOrigin='center';hideScreen();
-      say(sp.funny+' Not there.',HID.tries>=3?'Tap MEOW? to hear where the cat is.':'Try somewhere else.');return true}
+      say(sp.funny+' Not there.',HID.tries>=hintAt()?'Tap MEOW? to hear where the cat is.':'Try somewhere else.');return true}
     if(el.dataset.xgo==='again'){HID.round++;sfx.tap();hideRound();return true}
     if(el.dataset.xgo==='hint'){sfx.meow();const s=HID.spot;say(`Meow! The meow came from ${s.x<140?'the left':s.x>260?'the right':'the middle'} of the room${s.y<200?', up high':s.y>320?', down low':''}.`,'');return true}
     return false}};
@@ -1812,7 +2002,7 @@ function danceEnd(){
 function danceStart(fast){
   XT.forEach(f=>f());XT=[];DP.fast=fast;DP.on=true;DP.score=0;DP.miss=0;DP.beats=0;DP.lit=-1;DP.hit=false;
   danceScreen();say(fast?'A fast song! Get ready…':'A slow song! Get ready…','Tap the paw pad that lights up.');
-  xEvery(danceStep,fast?300:420);
+  xEvery(danceStep,fast?BY_AGE(400,340,300,260):BY_AGE(560,480,420,380));
 }
 XG.dance={start(){DP.on=false;DP.lit=-1;DP.beats=0;DP.score=0;danceScreen();say('Cat dance party! Tap the paw pads in time with the music to make the cat dance.','Pick a song to start.')},
   act(el){
